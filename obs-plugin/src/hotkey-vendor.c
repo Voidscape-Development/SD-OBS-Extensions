@@ -338,9 +338,8 @@ static void request_trigger_hotkey(obs_data_t *request_data, obs_data_t *respons
 	respond_ok(response_data);
 	obs_data_set_int(response_data, "hotkeyId", (long long)req.match);
 	obs_data_set_int(response_data, "matches", (long long)req.match_count);
-	obs_data_set_string(response_data, "matchedBy", str_empty(req.context_uuid) && str_empty(req.context_name)
-							       ? "name"
-							       : matched_by);
+	obs_data_set_string(response_data, "matchedBy",
+			    str_empty(req.context_uuid) && str_empty(req.context_name) ? "name" : matched_by);
 }
 
 /* ------------------------------------------------------------------------- */

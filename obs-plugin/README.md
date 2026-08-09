@@ -65,13 +65,31 @@ and re-created under the same name keeps working.
 
 ## Building
 
+This directory is a self-contained
+[obs-plugintemplate](https://github.com/obsproject/obs-plugintemplate) project.
+`buildspec.json` pins the OBS version and prebuilt dependencies, which the
+build scripts download for you:
+
 ```sh
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/obs-studio/build
-cmake --build build --config Release
+# From this directory. Presets: macos, ubuntu-x86_64, windows-x64
+cmake --preset ubuntu-x86_64
+cmake --build --preset ubuntu-x86_64
 ```
 
-`CMAKE_PREFIX_PATH` needs to point at wherever libobs' CMake package config
-lives; omit it if libobs is already on the default search path.
+CI uses the same scripts the template ships:
+
+```sh
+.github/scripts/build-ubuntu --config Release
+.github/scripts/build-macos --config Release
+.github/scripts/Build-Windows.ps1 -Configuration Release
+```
+
+Those scripts resolve the project root as two directories above themselves,
+which is why they live here rather than at the repository root — it makes this
+directory the project root without any patching.
+
+Prebuilt packages for all three platforms are attached to every CI run; see the
+repository README.
 
 ## Installing
 

@@ -1,0 +1,28 @@
+name: Dispatch
+run-name: ${{ github.ref_name }} manual run 🚀
+on:
+  workflow_dispatch:
+    inputs:
+      obsPlugin:
+        description: Build the OBS companion plugin
+        type: boolean
+        required: false
+        default: true
+      streamDeck:
+        description: Build the Stream Deck plugin
+        type: boolean
+        required: false
+        default: true
+permissions:
+  contents: read
+jobs:
+  build-obs-plugin:
+    name: Build OBS Companion Plugin 🧱
+    if: inputs.obsPlugin
+    uses: ./.github/workflows/build-obs-plugin.yaml
+    secrets: inherit
+
+  build-streamdeck-plugin:
+    name: Build Stream Deck Plugin 🎛️
+    if: inputs.streamDeck
+    uses: ./.github/workflows/build-streamdeck-plugin.yaml

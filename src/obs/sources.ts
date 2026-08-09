@@ -62,15 +62,8 @@ function sourceRef(
 		: { sourceName: source.name };
 }
 
-export async function listFilters(
-	instanceId: string,
-	source: { name: string; uuid?: string },
-): Promise<FilterRef[]> {
-	const { filters } = await connectionManager.call(
-		instanceId,
-		"GetSourceFilterList",
-		sourceRef(instanceId, source),
-	);
+export async function listFilters(instanceId: string, source: { name: string; uuid?: string }): Promise<FilterRef[]> {
+	const { filters } = await connectionManager.call(instanceId, "GetSourceFilterList", sourceRef(instanceId, source));
 
 	return filters
 		.map((filter) => ({

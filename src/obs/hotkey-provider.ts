@@ -11,7 +11,12 @@ import {
 	type CuratedHotkey,
 } from "./hotkey-catalog";
 import type { HotkeyTarget } from "./types";
-import { VendorRequest, type GetHotkeysResponse, type TriggerHotkeyResponse, type VendorHotkey } from "./vendor-protocol";
+import {
+	VendorRequest,
+	type GetHotkeysResponse,
+	type TriggerHotkeyResponse,
+	type VendorHotkey,
+} from "./vendor-protocol";
 
 /** A hotkey offered in a property inspector dropdown. */
 export type HotkeyChoice = {
@@ -111,10 +116,7 @@ class VendorHotkeyProvider implements HotkeyProvider {
 	}
 
 	async #fetch(): Promise<VendorHotkey[]> {
-		const response = await connectionManager.callVendor<GetHotkeysResponse>(
-			this.instanceId,
-			VendorRequest.getHotkeys,
-		);
+		const response = await connectionManager.callVendor<GetHotkeysResponse>(this.instanceId, VendorRequest.getHotkeys);
 
 		return response.hotkeys ?? [];
 	}

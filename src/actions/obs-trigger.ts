@@ -98,7 +98,10 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 		}
 	}
 
-	async #execute(target: KeyAction<TriggerSettings> | DialAction<TriggerSettings>, settings: TriggerSettings): Promise<void> {
+	async #execute(
+		target: KeyAction<TriggerSettings> | DialAction<TriggerSettings>,
+		settings: TriggerSettings,
+	): Promise<void> {
 		const { instanceId, kind } = settings;
 
 		if (!instanceId) {
@@ -205,7 +208,10 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 			const result: DataSourceResult = [];
 
 			if (inputs.length > 0) {
-				result.push({ label: "Sources", children: inputs.map((source) => ({ label: source.name, value: source.name })) });
+				result.push({
+					label: "Sources",
+					children: inputs.map((source) => ({ label: source.name, value: source.name })),
+				});
 			}
 
 			if (scenes.length > 0) {
@@ -288,10 +294,7 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 			return ungrouped;
 		}
 
-		return [
-			...ungrouped,
-			...[...groups.entries()].map(([label, children]) => ({ label, children })),
-		];
+		return [...ungrouped, ...[...groups.entries()].map(([label, children]) => ({ label, children }))];
 	}
 
 	async #filterItems(settings: TriggerSettings): Promise<DataSourceResult> {

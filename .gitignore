@@ -1,9 +1,25 @@
 # Node.js
 node_modules/
 
-# Stream Deck files
+# Stream Deck plugin
 *.sdPlugin/bin
 *.sdPlugin/logs
+logs/
 
-# CMake / OBS companion plugin
+# Packaged Stream Deck plugin, produced by `streamdeck pack`
+/release/
+
+# OBS companion plugin: CMake build trees, downloaded dependencies and packages
 obs-plugin/build/
+obs-plugin/build_*/
+obs-plugin/release/
+obs-plugin/release-portable/
+obs-plugin/.deps/
+obs-plugin/.ccache/
+obs-plugin/cmake/.CMakeBuildNumber
+
+# Dependency lock files written by the OBS build scripts
+*.lock.json
+
+# macOS legacy resource forks
+.DS_Store

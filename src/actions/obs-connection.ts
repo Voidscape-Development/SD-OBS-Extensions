@@ -144,9 +144,7 @@ export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
 			}
 
 			case "deleteInstance": {
-				const remaining = connectionManager
-					.getInstances()
-					.filter((instance) => instance.id !== ev.payload.instanceId);
+				const remaining = connectionManager.getInstances().filter((instance) => instance.id !== ev.payload.instanceId);
 
 				await connectionManager.saveInstances(remaining);
 				await streamDeck.ui.sendToPropertyInspector({ event, ok: true });

@@ -78,9 +78,51 @@ instructions.
 
 ```sh
 npm install
-npm run build     # bundle to dev.voidscape.obs-extensions.sdPlugin/bin
-npm run watch     # rebuild and restart the plugin on change
+npm run build        # bundle to dev.voidscape.obs-extensions.sdPlugin/bin
+npm run watch        # rebuild and restart the plugin on change
+npm run check        # type check
+npm run format       # prettier over src/ and the property inspectors
 ```
+
+## Continuous integration
+
+Both halves build in CI, and each only runs when its own files change — a
+TypeScript-only commit does not spend time on the three-platform OBS matrix.
+Tags build everything, since a release needs the full set of artifacts.
+
+| Workflow | Runs on | What it does |
+| --- | --- | --- |
+| `pull-request.yaml` | Pull requests | Formatting checks, then whichever halves changed. |
+| `push.yaml` | `main`, `release/**`, tags | The same, plus a draft release on a version tag. |
+| `dispatch.yaml` | Manual | Build either half on demand. |
+
+### Getting a development build
+
+Every run of the Stream Deck job uploads two artifacts:
+
+- **`…-streamdeck-<commit>`** — a `.streamDeckPlugin` file. Download it, unzip,
+  and double-click to install; Stream Deck handles the rest.
+- **`…-streamdeck-unpacked-<commit>`** — the plugin directory as-is, for
+  dropping straight into the Stream Deck plugins folder when a packaged install
+  misbehaves.
+
+The OBS companion job uploads per-platform packages (Windows installer and
+portable zip, macOS pkg, Ubuntu deb) plus debug symbols, using the standard
+[obs-plugintemplate](https://github.com/obsproject/obs-plugintemplate) build
+scripts.
+
+### Layout notes
+
+The companion plugin is a subdirectory rather than its own repository, so the
+plugintemplate tooling is split to suit: the build scripts live in
+`obs-plugin/.github/scripts/` (they resolve the project root as two directories
+above themselves, which makes `obs-plugin/` the root), while the composite
+actions stay in the repository's own `.github/actions/` and are pointed at the
+subdirectory through their `workingDirectory` input.
+
+`obs-plugin/cmake/`, `obs-plugin/.github/scripts/` and `build-aux/` are copied
+verbatim from the template and should stay that way so upstream updates apply
+cleanly. Only three files diverge, each with a comment saying why.
 
 ## Notes
 

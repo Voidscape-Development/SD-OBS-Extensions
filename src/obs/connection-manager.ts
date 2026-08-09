@@ -25,12 +25,7 @@ type Events = {
 	/** The configured instance list changed. */
 	instancesChanged: (instances: ObsInstance[]) => void;
 	/** A filter's enabled state changed in OBS. */
-	filterStateChanged: (event: {
-		instanceId: string;
-		sourceName: string;
-		filterName: string;
-		enabled: boolean;
-	}) => void;
+	filterStateChanged: (event: { instanceId: string; sourceName: string; filterName: string; enabled: boolean }) => void;
 };
 
 /** Compares dotted version strings, tolerating suffixes such as `5.5.0-beta1`. */
