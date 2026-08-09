@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+	<head lang="en">
+		<title>OBS Trigger Settings</title>
+		<meta charset="utf-8" />
+		<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+		<style>
+			.hint {
+				padding: 4px 0 8px 0;
+				font-size: 9pt;
+				opacity: 0.7;
+				line-height: 1.4;
+			}
+
+			.hint.warn {
+				opacity: 1;
+				color: #f5a623;
+			}
+		</style>
+	</head>
+
+	<body>
+		<sdpi-item label="OBS Instance">
+			<sdpi-select
+				id="instance"
+				setting="instanceId"
+				datasource="instances"
+				placeholder="Select an instance"
+			></sdpi-select>
+		</sdpi-item>
+
+		<sdpi-item label="Trigger">
+			<sdpi-select id="kind" setting="kind" default="globalHotkey">
+				<option value="globalHotkey">Global hotkey</option>
+				<option value="sourceHotkey">Source hotkey</option>
+				<option value="filter">Filter</option>
+			</sdpi-select>
+		</sdpi-item>
+
+		<sdpi-item id="row-source" label="Source">
+			<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
+		</sdpi-item>
+
+		<sdpi-item id="row-hotkey" label="Hotkey">
+			<sdpi-select id="hotkey" setting="hotkey" datasource="hotkeys" placeholder="Select a hotkey"></sdpi-select>
+		</sdpi-item>
+
+		<sdpi-item id="row-filter" label="Filter">
+			<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
+		</sdpi-item>
+
+		<sdpi-item id="row-filter-op" label="Action">
+			<sdpi-select id="filterOperation" setting="filterOperation" default="toggle">
+				<option value="toggle">Toggle</option>
+				<option value="enable">Enable</option>
+				<option value="disable">Disable</option>
+			</sdpi-select>
+		</sdpi-item>
+
+		<div id="hint" class="hint"></div>
+
+		<script>
+			(() => {
+				const client = SDPIComponents.streamDeckClient;
+
+				const el = (id) => document.getElementById(id);
+				const rows = {
+					source: el("row-source"),
+					hotkey: el("row-hotkey"),
+					filter: el("row-filter"),
+					filterOp: el("row-filter-op"),
+				};
+
+				/**
+				 * Which rows each trigger type uses. Hiding via style rather than
+				 * the hidden attribute, since the components set their own display.
+				 */
+				const LAYOUT = {
+					globalHotkey: ["hotkey"],
+					sourceHotkey: ["source", "hotkey"],
+					filter: ["source", "filter", "filterOp"],
+				};
+
+				function applyLayout(kind) {
+					const visible = LAYOUT[kind] ?? LAYOUT.globalHotkey;
+					for (const [name, row] of Object.entries(rows)) {
+						row.style.display = visible.includes(name) ? "" : "none";
+					}
+				}
+
+				/**
+				 * The plugin reads the action's persisted settings to work out what
+				 * to put in a dependent dropdown, and the parent's own save is a
+				 * round trip to the Stream Deck. Waiting a moment keeps the child
+				 * from being refreshed against the previous selection.
+				 */
+				const SETTLE_MS = 300;
+
+				function refresh(...ids) {
+					setTimeout(() => {
+						for (const id of ids) {
+							el(id)?.refresh?.();
+						}
+					}, SETTLE_MS);
+				}
+
+				async function updateHint() {
+					try {
+						const response = await client.get(
+							"sendToPlugin",
+							"sendToPropertyInspector",
+							(msg) => msg.payload?.event === "capabilities",
+							{ event: "capabilities" },
+						);
+
+						const { connected, companion, supportsHotkeyContext } = response.payload;
+						const hint = el("hint");
+						hint.classList.remove("warn");
+
+						if (!connected) {
+							hint.textContent =
+								"Not connected. Connect this instance from an OBS Connection action to load sources and hotkeys.";
+							hint.classList.add("warn");
+							return;
+						}
+
+						if (companion) {
+							hint.textContent =
+								"Companion OBS plugin detected — hotkeys show their real OBS names and survive source renames.";
+							return;
+						}
+
+						hint.textContent = supportsHotkeyContext
+							? "Install the companion OBS plugin for full hotkey names and rename-proof targeting."
+							: "obs-websocket 5.4.0 or later is required for source hotkeys. Update OBS, or install the companion OBS plugin.";
+
+						if (!supportsHotkeyContext) {
+							hint.classList.add("warn");
+						}
+					} catch {
+						el("hint").textContent = "";
+					}
+				}
+
+				el("instance").addEventListener("valuechange", () => {
+					refresh("source", "hotkey", "filter");
+					updateHint();
+				});
+
+				el("kind").addEventListener("valuechange", (ev) => {
+					applyLayout(ev.target.value);
+					refresh("hotkey");
+				});
+
+				el("source").addEventListener("valuechange", () => refresh("hotkey", "filter"));
+
+				(async () => {
+					const payload = await client.getSettings();
+					applyLayout(payload?.settings?.kind ?? "globalHotkey");
+					await updateHint();
+				})();
+			})();
+		</script>
+	</body>
+</html>

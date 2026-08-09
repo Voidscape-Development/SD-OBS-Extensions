@@ -1,0 +1,50 @@
+name: Check Code Formatting 🛠️
+on:
+  workflow_call:
+jobs:
+  clang-format:
+    name: C Formatting 🐉
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: clang-format check 🐉
+        id: clang-format
+        uses: ./.github/actions/run-clang-format
+        with:
+          failCondition: error
+
+  gersemi:
+    name: CMake Formatting 🎛️
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gersemi Check 🎛️
+        id: gersemi
+        uses: ./.github/actions/run-gersemi
+        with:
+          failCondition: error
+
+  prettier:
+    name: TypeScript Formatting 💅
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install Dependencies 🛍️
+        run: npm ci
+
+      # Uses the same npm script developers run locally, so a green check here
+      # always means `npm run format` leaves the tree untouched.
+      - name: Prettier Check 💅
+        run: npm run format:check

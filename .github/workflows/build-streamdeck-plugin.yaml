@@ -1,0 +1,99 @@
+name: Build Stream Deck Plugin
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: Produce an installable .streamDeckPlugin artifact
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      pluginName:
+        description: Plugin name read from the manifest
+        value: ${{ jobs.build.outputs.pluginName }}
+      pluginVersion:
+        description: Plugin version read from the manifest
+        value: ${{ jobs.build.outputs.pluginVersion }}
+env:
+  PLUGIN_DIR: dev.voidscape.obs-extensions.sdPlugin
+jobs:
+  build:
+    name: Build and Package 🎛️
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      pluginName: ${{ steps.setup.outputs.pluginName }}
+      pluginVersion: ${{ steps.setup.outputs.pluginVersion }}
+      commitHash: ${{ steps.setup.outputs.commitHash }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Matches the Node version Stream Deck runs the plugin under, declared in
+      # the manifest's Nodejs block.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set Up Environment 🔧
+        id: setup
+        run: |
+          : Set Up Environment 🔧
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+
+          plugin_name="$(jq -r '.Name' "${PLUGIN_DIR}/manifest.json")"
+          plugin_version="$(jq -r '.Version' "${PLUGIN_DIR}/manifest.json")"
+
+          echo "pluginName=${plugin_name}" >> $GITHUB_OUTPUT
+          echo "pluginVersion=${plugin_version}" >> $GITHUB_OUTPUT
+          echo "commitHash=${GITHUB_SHA:0:9}" >> $GITHUB_OUTPUT
+
+      - name: Install Dependencies 🛍️
+        run: |
+          : Install Dependencies 🛍️
+          npm ci
+
+      - name: Check Types 🔍
+        run: |
+          : Check Types 🔍
+          npx tsc --noEmit
+
+      - name: Build Plugin 🧱
+        run: |
+          : Build Plugin 🧱
+          npm run build
+
+      - name: Validate Plugin ☑️
+        run: |
+          : Validate Plugin ☑️
+          npx streamdeck validate "./${PLUGIN_DIR}"
+
+      # A .streamDeckPlugin is a double-clickable installer, so development
+      # builds can be installed straight from the run's artifacts.
+      - name: Package Plugin 📀
+        if: inputs.package
+        run: |
+          : Package Plugin 📀
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+
+          mkdir -p release
+          npx streamdeck pack "./${PLUGIN_DIR}" --output release --force --no-file-list
+
+      - name: Upload Artifacts 📡
+        if: inputs.package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-streamdeck-${{ steps.setup.outputs.commitHash }}
+          path: ${{ github.workspace }}/release/*.streamDeckPlugin
+          if-no-files-found: error
+
+      # Useful when a build fails to install: the unpacked tree can be dropped
+      # straight into the Stream Deck plugins directory.
+      - name: Upload Unpacked Plugin 🗂️
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-streamdeck-unpacked-${{ steps.setup.outputs.commitHash }}
+          path: ${{ github.workspace }}/${{ env.PLUGIN_DIR }}
+          if-no-files-found: error

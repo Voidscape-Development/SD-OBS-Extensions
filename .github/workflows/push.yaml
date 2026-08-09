@@ -1,0 +1,170 @@
+name: Push
+run-name: ${{ github.ref_name }} push run 🚀
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'release/**'
+    tags:
+      - '*'
+permissions:
+  contents: write
+jobs:
+  check-format:
+    name: Check Formatting 🔍
+    if: github.ref_name == 'main' || github.ref_name == 'master'
+    uses: ./.github/workflows/check-format.yaml
+    permissions:
+      contents: read
+
+  # The two halves of this repository are built by separate toolchains, and the
+  # OBS matrix is expensive, so each only runs when its own files moved. Tags
+  # always build both, since a release needs the full set of artifacts.
+  changes:
+    name: Detect Changes 🔎
+    runs-on: ubuntu-24.04
+    outputs:
+      obsPlugin: ${{ steps.gate.outputs.obsPlugin }}
+      streamDeck: ${{ steps.gate.outputs.streamDeck }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check OBS Plugin Files ✅
+        uses: ./.github/actions/check-changes
+        id: obs
+        with:
+          checkGlob: "'obs-plugin/**' '.github/**' 'build-aux/**'"
+
+      - name: Check Stream Deck Plugin Files ✅
+        uses: ./.github/actions/check-changes
+        id: streamdeck
+        with:
+          checkGlob: "'src/**' 'dev.voidscape.obs-extensions.sdPlugin/**' 'package.json' 'package-lock.json' 'tsconfig.json' 'rollup.config.mjs' '.github/**'"
+
+      - name: Resolve Gates 🚦
+        id: gate
+        run: |
+          : Resolve Gates 🚦
+          if [[ "${GITHUB_REF_TYPE}" == 'tag' ]]; then
+            echo 'obsPlugin=true' >> $GITHUB_OUTPUT
+            echo 'streamDeck=true' >> $GITHUB_OUTPUT
+          else
+            echo 'obsPlugin=${{ steps.obs.outputs.hasChangedFiles }}' >> $GITHUB_OUTPUT
+            echo 'streamDeck=${{ steps.streamdeck.outputs.hasChangedFiles }}' >> $GITHUB_OUTPUT
+          fi
+
+  build-obs-plugin:
+    name: Build OBS Companion Plugin 🧱
+    needs: changes
+    if: fromJSON(needs.changes.outputs.obsPlugin)
+    uses: ./.github/workflows/build-obs-plugin.yaml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  build-streamdeck-plugin:
+    name: Build Stream Deck Plugin 🎛️
+    needs: changes
+    if: fromJSON(needs.changes.outputs.streamDeck)
+    uses: ./.github/workflows/build-streamdeck-plugin.yaml
+    permissions:
+      contents: read
+
+  create-release:
+    name: Create Release 🛫
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    needs: [build-obs-plugin, build-streamdeck-plugin]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check Release Tag ☑️
+        id: check
+        run: |
+          : Check Release Tag ☑️
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+          shopt -s extglob
+
+          case "${GITHUB_REF_NAME}" in
+            +([0-9]).+([0-9]).+([0-9]) )
+              echo 'validTag=true' >> $GITHUB_OUTPUT
+              echo 'prerelease=false' >> $GITHUB_OUTPUT
+              echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+              ;;
+            +([0-9]).+([0-9]).+([0-9])-@(beta|rc)*([0-9]) )
+              echo 'validTag=true' >> $GITHUB_OUTPUT
+              echo 'prerelease=true' >> $GITHUB_OUTPUT
+              echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+              ;;
+            *) echo 'validTag=false' >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Download Build Artifacts 📥
+        uses: actions/download-artifact@v4
+        if: fromJSON(steps.check.outputs.validTag)
+        id: download
+
+      - name: Rename Files 🏷️
+        if: fromJSON(steps.check.outputs.validTag)
+        run: |
+          : Rename Files 🏷️
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+          shopt -s extglob
+          shopt -s nullglob
+
+          root_dir="$(pwd)"
+          commit_hash="${GITHUB_SHA:0:9}"
+
+          variants=(
+            'windows-x64;zip|exe'
+            'windows-x64-Portable;zip'
+            'macos-universal;tar.xz|pkg'
+            'ubuntu-24.04-x86_64;tar.xz|deb|ddeb'
+            'sources;tar.xz'
+            'streamdeck;streamDeckPlugin'
+          )
+
+          for variant_data in "${variants[@]}"; do
+            IFS=';' read -r variant suffix <<< "${variant_data}"
+
+            candidates=(*-${variant}-${commit_hash}/@(*|*-dbgsym).@(${suffix}))
+
+            for candidate in "${candidates[@]}"; do
+              mv "${candidate}" "${root_dir}"
+            done
+          done
+
+      - name: Generate Checksums 🪪
+        if: fromJSON(steps.check.outputs.validTag)
+        run: |
+          : Generate Checksums 🪪
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+          shopt -s extglob
+
+          echo "### Checksums" > ${{ github.workspace }}/CHECKSUMS.txt
+          for file in ${{ github.workspace }}/@(*.exe|*.deb|*.ddeb|*.pkg|*.tar.xz|*.zip|*.streamDeckPlugin); do
+            echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
+          done
+
+      - name: Create Release 🛫
+        if: fromJSON(steps.check.outputs.validTag)
+        id: create_release
+        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564
+        with:
+          draft: true
+          prerelease: ${{ fromJSON(steps.check.outputs.prerelease) }}
+          tag_name: ${{ steps.check.outputs.version }}
+          name: OBS Extensions ${{ steps.check.outputs.version }}
+          body_path: ${{ github.workspace }}/CHECKSUMS.txt
+          files: |
+            ${{ github.workspace }}/*.exe
+            ${{ github.workspace }}/*.zip
+            ${{ github.workspace }}/*.pkg
+            ${{ github.workspace }}/*.deb
+            ${{ github.workspace }}/*.ddeb
+            ${{ github.workspace }}/*.tar.xz
+            ${{ github.workspace }}/*.streamDeckPlugin

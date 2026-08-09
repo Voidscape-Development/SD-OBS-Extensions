@@ -1,0 +1,11 @@
+# Scoping is done by the globs in package.json's format scripts; this file only
+# guards against build output being picked up by an ad-hoc prettier invocation.
+node_modules/
+dev.voidscape.obs-extensions.sdPlugin/bin/
+
+# Formatted by clang-format and gersemi instead.
+obs-plugin/
+
+# Copied verbatim from the OBS plugin template; kept byte-identical upstream.
+.github/
+build-aux/

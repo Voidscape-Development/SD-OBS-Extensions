@@ -1,0 +1,55 @@
+name: Pull Request
+run-name: 'PR: ${{ github.event.pull_request.title }} 🔍'
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - 'release/**'
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+permissions:
+  contents: read
+jobs:
+  check-format:
+    name: Check Formatting 🔍
+    uses: ./.github/workflows/check-format.yaml
+
+  changes:
+    name: Detect Changes 🔎
+    runs-on: ubuntu-24.04
+    outputs:
+      obsPlugin: ${{ steps.obs.outputs.hasChangedFiles }}
+      streamDeck: ${{ steps.streamdeck.outputs.hasChangedFiles }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check OBS Plugin Files ✅
+        uses: ./.github/actions/check-changes
+        id: obs
+        with:
+          checkGlob: "'obs-plugin/**' '.github/**' 'build-aux/**'"
+
+      - name: Check Stream Deck Plugin Files ✅
+        uses: ./.github/actions/check-changes
+        id: streamdeck
+        with:
+          checkGlob: "'src/**' 'dev.voidscape.obs-extensions.sdPlugin/**' 'package.json' 'package-lock.json' 'tsconfig.json' 'rollup.config.mjs' '.github/**'"
+
+  build-obs-plugin:
+    name: Build OBS Companion Plugin 🧱
+    needs: changes
+    if: fromJSON(needs.changes.outputs.obsPlugin)
+    uses: ./.github/workflows/build-obs-plugin.yaml
+    secrets: inherit
+
+  build-streamdeck-plugin:
+    name: Build Stream Deck Plugin 🎛️
+    needs: changes
+    if: fromJSON(needs.changes.outputs.streamDeck)
+    uses: ./.github/workflows/build-streamdeck-plugin.yaml
