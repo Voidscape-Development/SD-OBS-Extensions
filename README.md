@@ -94,3 +94,11 @@ this plugin deliberately does not route them through one: scene switching
 (`SetCurrentProgramScene`) and scene item visibility (`SetSceneItemEnabled`)
 are both unambiguous over obs-websocket, whereas their hotkey equivalents are
 registered once per scene under a shared name.
+
+## License
+
+GPL-2.0, in full in [`LICENSE`](LICENSE).
+
+The companion plugin links against libobs and vendors `obs-websocket-api.h`,
+both of which are GPL-2.0-or-later, so the whole repository is licensed to
+match.
