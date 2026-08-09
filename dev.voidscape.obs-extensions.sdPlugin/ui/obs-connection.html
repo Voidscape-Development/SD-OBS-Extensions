@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <title>OBS Connection Settings</title>
+    <meta charset="utf-8" />
+    <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+    <style>
+        .heading {
+            margin: 12px 0 4px 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 9pt;
+            font-weight: 600;
+            opacity: 0.75;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 6px;
+            padding: 6px 0 2px 108px;
+        }
+
+        .buttons button {
+            flex: 1;
+            padding: 4px 8px;
+            font-size: 9pt;
+            color: #d8d8d8;
+            background: #3d3d3d;
+            border: 1px solid #4f4f4f;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .buttons button:hover:not(:disabled) {
+            background: #4a4a4a;
+        }
+
+        .buttons button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .status {
+            padding: 6px 0 0 108px;
+            font-size: 9pt;
+            opacity: 0.75;
+            line-height: 1.4;
+        }
+
+        .status.error {
+            color: #f5a623;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <sdpi-item label="Instance">
+        <sdpi-select id="instance" setting="instanceId" datasource="instances"
+            placeholder="All instances"></sdpi-select>
+    </sdpi-item>
+
+    <sdpi-item label="On press">
+        <sdpi-checkbox setting="pressToToggle" default="true" label="Toggle the connection"></sdpi-checkbox>
+    </sdpi-item>
+
+    <div class="heading">Manage instances</div>
+
+    <sdpi-item label="Editing">
+        <sdpi-select id="editing" datasource="instanceList" placeholder="Select an instance to edit"></sdpi-select>
+    </sdpi-item>
+
+    <sdpi-item label="Name">
+        <sdpi-textfield id="name" placeholder="OBS"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Host">
+        <sdpi-textfield id="host" placeholder="127.0.0.1"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Port">
+        <sdpi-textfield id="port" placeholder="4455"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Password">
+        <sdpi-password id="password" placeholder="Leave blank if disabled"></sdpi-password>
+    </sdpi-item>
+
+    <sdpi-item label="Auto-connect">
+        <sdpi-checkbox id="autoConnect" label="Connect when Stream Deck starts"></sdpi-checkbox>
+    </sdpi-item>
+
+    <div class="buttons">
+        <button id="btn-new" type="button">New</button>
+        <button id="btn-save" type="button">Save</button>
+        <button id="btn-delete" type="button">Delete</button>
+        <button id="btn-toggle" type="button">Connect</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <script>
+        (() => {
+            const client = SDPIComponents.streamDeckClient;
+            const el = (id) => document.getElementById(id);
+
+            /** Id of the instance currently in the editor; empty means "new". */
+            let editingId = "";
+
+            /**
+             * Round trip to the plugin. sdpi-components' own transport matches
+             * responses by the echoed event name, so each operation uses a
+             * distinct one.
+             */
+            async function rpc(event, payload = {}) {
+                const response = await client.get(
+                    "sendToPlugin",
+                    "sendToPropertyInspector",
+                    (msg) => msg.payload?.event === event,
+                    { event, ...payload },
+                );
+
+                return response.payload;
+            }
+
+            function setStatus(text, isError = false) {
+                const status = el("status");
+                status.textContent = text;
+                status.classList.toggle("error", isError);
+            }
+
+            function fill(instance) {
+                el("name").value = instance.name ?? "";
+                el("host").value = instance.host ?? "127.0.0.1";
+                el("port").value = String(instance.port ?? 4455);
+                el("password").value = instance.password ?? "";
+                el("autoConnect").value = Boolean(instance.autoConnect);
+            }
+
+            function describe(payload) {
+                if (payload.error) {
+                    setStatus(payload.error, true);
+                    return;
+                }
+
+                const parts = [];
+                if (payload.status) {
+                    parts.push(payload.status.charAt(0).toUpperCase() + payload.status.slice(1));
+                }
+                if (payload.obsVersion) {
+                    parts.push(`OBS ${payload.obsVersion}`);
+                }
+                if (payload.obsWebSocketVersion) {
+                    parts.push(`obs-websocket ${payload.obsWebSocketVersion}`);
+                }
+                if (payload.companion) {
+                    parts.push("companion plugin detected");
+                }
+
+                setStatus(parts.join(" · "));
+                el("btn-toggle").textContent = payload.status === "connected" ? "Disconnect" : "Connect";
+            }
+
+            function updateButtons() {
+                const existing = Boolean(editingId);
+                el("btn-delete").disabled = !existing;
+                el("btn-toggle").disabled = !existing;
+            }
+
+            /** Repopulates both instance dropdowns after the list changes. */
+            function refreshLists() {
+                el("instance")?.refresh?.();
+                el("editing")?.refresh?.();
+            }
+
+            el("editing").addEventListener("valuechange", async (ev) => {
+                editingId = ev.target.value ?? "";
+                updateButtons();
+
+                if (!editingId) {
+                    setStatus("");
+                    return;
+                }
+
+                const payload = await rpc("getInstance", { instanceId: editingId });
+                fill(payload.instance ?? {});
+                describe(payload);
+            });
+
+            el("btn-new").addEventListener("click", () => {
+                editingId = "";
+                el("editing").value = "";
+                fill({ name: "OBS", host: "127.0.0.1", port: 4455, password: "", autoConnect: true });
+                setStatus("Fill in the details, then choose Save.");
+                updateButtons();
+            });
+
+            el("btn-save").addEventListener("click", async () => {
+                const name = String(el("name").value ?? "").trim();
+                if (!name) {
+                    setStatus("Give the instance a name.", true);
+                    return;
+                }
+
+                const port = Number.parseInt(String(el("port").value ?? ""), 10);
+                if (!Number.isInteger(port) || port < 1 || port > 65535) {
+                    setStatus("Port must be a number between 1 and 65535.", true);
+                    return;
+                }
+
+                const payload = await rpc("saveInstance", {
+                    instance: {
+                        id: editingId,
+                        name,
+                        host: String(el("host").value ?? "").trim() || "127.0.0.1",
+                        port,
+                        password: String(el("password").value ?? ""),
+                        autoConnect: Boolean(el("autoConnect").value),
+                    },
+                });
+
+                editingId = payload.instanceId ?? editingId;
+                updateButtons();
+                refreshLists();
+                setStatus("Saved.");
+            });
+
+            el("btn-delete").addEventListener("click", async () => {
+                await rpc("deleteInstance", { instanceId: editingId });
+
+                editingId = "";
+                el("editing").value = "";
+                fill({});
+                updateButtons();
+                refreshLists();
+                setStatus("Deleted.");
+            });
+
+            el("btn-toggle").addEventListener("click", async () => {
+                setStatus("Working…");
+                const payload = await rpc("toggleInstance", { instanceId: editingId });
+                describe(payload);
+            });
+
+            updateButtons();
+        })();
+    </script>
+</body>
+
+</html>

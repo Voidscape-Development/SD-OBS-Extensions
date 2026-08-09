@@ -4,17 +4,41 @@
 	"Author": "Voidscape Media",
 	"Actions": [
 		{
-			"Name": "Counter",
-			"UUID": "dev.voidscape.obs-extensions.increment",
-			"Icon": "imgs/actions/counter/icon",
-			"Tooltip": "Displays a count, which increments by one on press.",
-			"PropertyInspectorPath": "ui/increment-counter.html",
+			"Name": "OBS Trigger",
+			"UUID": "dev.voidscape.obs-extensions.trigger",
+			"Icon": "imgs/actions/trigger/icon",
+			"Tooltip": "Triggers an OBS hotkey, or enables, disables or toggles a source filter.",
+			"PropertyInspectorPath": "ui/obs-trigger.html",
 			"Controllers": [
 				"Keypad"
 			],
 			"States": [
 				{
-					"Image": "imgs/actions/counter/key",
+					"Image": "imgs/actions/trigger/key",
+					"TitleAlignment": "middle"
+				},
+				{
+					"Image": "imgs/actions/trigger/key-active",
+					"TitleAlignment": "middle"
+				}
+			]
+		},
+		{
+			"Name": "OBS Connection",
+			"UUID": "dev.voidscape.obs-extensions.connection",
+			"Icon": "imgs/actions/connection/icon",
+			"Tooltip": "Manages the plugin's OBS instances, and connects or disconnects them.",
+			"PropertyInspectorPath": "ui/obs-connection.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/connection/key",
+					"TitleAlignment": "middle"
+				},
+				{
+					"Image": "imgs/actions/connection/key-active",
 					"TitleAlignment": "middle"
 				}
 			]
