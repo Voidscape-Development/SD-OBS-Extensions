@@ -1,9 +1,7 @@
 import streamDeck, {
 	action,
 	SingletonAction,
-	type DialAction,
 	type DidReceiveSettingsEvent,
-	type KeyAction,
 	type KeyDownEvent,
 	type SendToPluginEvent,
 	type WillAppearEvent,
@@ -11,13 +9,9 @@ import streamDeck, {
 
 import { connectionManager } from "../obs/connection-manager";
 import { getHotkeyProvider, type HotkeyChoice } from "../obs/hotkey-provider";
-import { applyFilterOperation, findSource, isFilterEnabled, listFilters, listSources } from "../obs/sources";
-import type { DataSourceItem, DataSourceResult, HotkeyTarget, TriggerSettings } from "../obs/types";
-
-/** Shown in place of a dropdown's contents when it cannot be populated. */
-function notice(label: string): DataSourceItem[] {
-	return [{ label, value: "", disabled: true }];
-}
+import { applyFilterOperation, findSource } from "../obs/sources";
+import type { DataSourceItem, DataSourceResult, FilterSetOperation, HotkeyTarget, TriggerSettings } from "../obs/types";
+import { backfillSourceUuid, filterItems, instanceItems, notice, sourceItems } from "./property-inspector";
 
 function parseHotkey(serialised: string | undefined): HotkeyTarget | undefined {
 	if (!serialised) {
@@ -33,63 +27,39 @@ function parseHotkey(serialised: string | undefined): HotkeyTarget | undefined {
 }
 
 /**
- * Triggers an OBS hotkey or flips a filter when the key is pressed.
+ * Settings written before the OBS Filter action existed may still say
+ * `toggle`, which this action no longer offers. Enabling is the closest
+ * single-shot reading of it, and the property inspector shows the correction
+ * the next time the key is opened.
+ */
+function toSetOperation(operation: string | undefined): FilterSetOperation {
+	return operation === "disable" ? "disable" : "enable";
+}
+
+/**
+ * Fires an OBS hotkey, or drives a filter to a known state, when the key is
+ * pressed.
+ *
+ * A single state throughout: a trigger has no idea what the hotkey it fired
+ * did inside OBS, so there is nothing honest for a second state to show. Live
+ * on/off feedback for filters is the OBS Filter action's job.
  *
  * Everything the property inspector shows is fetched live from OBS, so the
  * dropdowns always reflect the instance the action is pointed at.
  */
 @action({ UUID: "dev.voidscape.obs-extensions.trigger" })
 export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
-	constructor() {
-		super();
-
-		// Keeps filter keys in step with changes made anywhere else, including
-		// in the OBS interface itself.
-		connectionManager.on("filterStateChanged", (ev) => {
-			void this.#syncFilterState(ev.instanceId, ev.sourceName, ev.filterName, ev.enabled);
-		});
-
-		connectionManager.on("stateChanged", () => void this.#refreshFilterStates());
-	}
-
 	override async onWillAppear(ev: WillAppearEvent<TriggerSettings>): Promise<void> {
-		await this.#renderFilterState(ev.action, ev.payload.settings);
+		await backfillSourceUuid(ev.action, ev.payload.settings);
 	}
 
 	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<TriggerSettings>): Promise<void> {
-		await this.#backfillSourceUuid(ev.action, ev.payload.settings);
-		await this.#renderFilterState(ev.action, ev.payload.settings);
-	}
-
-	/**
-	 * The property inspector stores the source by name, since that is what the
-	 * dropdown shows. Resolving the UUID alongside it lets requests target the
-	 * source by UUID instead, so a later rename in OBS does not break the key.
-	 */
-	async #backfillSourceUuid(
-		target: KeyAction<TriggerSettings> | DialAction<TriggerSettings>,
-		settings: TriggerSettings,
-	): Promise<void> {
-		const { instanceId, sourceName } = settings;
-		if (!instanceId || !sourceName || !connectionManager.isConnected(instanceId)) {
-			return;
-		}
-
-		try {
-			const source = await findSource(instanceId, sourceName);
-			if (source?.uuid && source.uuid !== settings.sourceUuid) {
-				await target.setSettings({ ...settings, sourceUuid: source.uuid });
-			}
-		} catch {
-			// Best effort; requests fall back to targeting by name.
-		}
+		await backfillSourceUuid(ev.action, ev.payload.settings);
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<TriggerSettings>): Promise<void> {
-		const settings = ev.payload.settings;
-
 		try {
-			await this.#execute(ev.action, settings);
+			await this.#execute(ev.payload.settings);
 			await ev.action.showOk();
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
@@ -98,10 +68,7 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 		}
 	}
 
-	async #execute(
-		target: KeyAction<TriggerSettings> | DialAction<TriggerSettings>,
-		settings: TriggerSettings,
-	): Promise<void> {
+	async #execute(settings: TriggerSettings): Promise<void> {
 		const { instanceId, kind } = settings;
 
 		if (!instanceId) {
@@ -117,16 +84,12 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 				throw new Error("This action has no filter selected.");
 			}
 
-			const enabled = await applyFilterOperation(
+			await applyFilterOperation(
 				instanceId,
 				{ name: settings.sourceName, uuid: settings.sourceUuid },
 				settings.filterName,
-				settings.filterOperation ?? "toggle",
+				toSetOperation(settings.filterOperation),
 			);
-
-			if (target.isKey()) {
-				await target.setState(enabled ? 1 : 0);
-			}
 
 			return;
 		}
@@ -146,17 +109,11 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 
 		switch (event) {
 			case "instances":
-				await streamDeck.ui.sendToPropertyInspector({
-					event,
-					items: connectionManager.getInstances().map((instance) => ({
-						label: instance.name,
-						value: instance.id,
-					})),
-				});
+				await streamDeck.ui.sendToPropertyInspector({ event, items: instanceItems() });
 				break;
 
 			case "sources":
-				await streamDeck.ui.sendToPropertyInspector({ event, items: await this.#sourceItems(settings) });
+				await streamDeck.ui.sendToPropertyInspector({ event, items: await sourceItems(settings) });
 				break;
 
 			case "hotkeys":
@@ -164,7 +121,7 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 				break;
 
 			case "filters":
-				await streamDeck.ui.sendToPropertyInspector({ event, items: await this.#filterItems(settings) });
+				await streamDeck.ui.sendToPropertyInspector({ event, items: await filterItems(settings) });
 				break;
 
 			case "capabilities":
@@ -189,40 +146,6 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 			companion: Boolean(instanceId) && connectionManager.hasCompanion(instanceId!),
 			supportsHotkeyContext: Boolean(instanceId) && connectionManager.supportsHotkeyContext(instanceId!),
 		};
-	}
-
-	async #sourceItems(settings: TriggerSettings): Promise<DataSourceResult> {
-		const { instanceId } = settings;
-		if (!instanceId || !connectionManager.isConnected(instanceId)) {
-			return notice("Connect to an OBS instance first");
-		}
-
-		try {
-			const sources = await listSources(instanceId);
-			if (sources.length === 0) {
-				return notice("No sources found");
-			}
-
-			const inputs = sources.filter((source) => !source.isScene);
-			const scenes = sources.filter((source) => source.isScene);
-			const result: DataSourceResult = [];
-
-			if (inputs.length > 0) {
-				result.push({
-					label: "Sources",
-					children: inputs.map((source) => ({ label: source.name, value: source.name })),
-				});
-			}
-
-			if (scenes.length > 0) {
-				result.push({ label: "Scenes", children: scenes.map((scene) => ({ label: scene.name, value: scene.name })) });
-			}
-
-			return result;
-		} catch (err) {
-			streamDeck.logger.error("Failed to list OBS sources.", err);
-			return notice("Could not load sources");
-		}
 	}
 
 	async #hotkeyItems(settings: TriggerSettings): Promise<DataSourceResult> {
@@ -295,81 +218,5 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 		}
 
 		return [...ungrouped, ...[...groups.entries()].map(([label, children]) => ({ label, children }))];
-	}
-
-	async #filterItems(settings: TriggerSettings): Promise<DataSourceResult> {
-		const { instanceId, sourceName, sourceUuid } = settings;
-		if (!instanceId || !connectionManager.isConnected(instanceId)) {
-			return notice("Connect to an OBS instance first");
-		}
-
-		if (!sourceName) {
-			return notice("Select a source first");
-		}
-
-		try {
-			const filters = await listFilters(instanceId, { name: sourceName, uuid: sourceUuid });
-			if (filters.length === 0) {
-				return notice("That source has no filters");
-			}
-
-			return filters.map((filter) => ({ label: filter.name, value: filter.name }));
-		} catch (err) {
-			streamDeck.logger.error("Failed to list OBS filters.", err);
-			return notice("Could not load filters");
-		}
-	}
-
-	/* --- Filter state ---------------------------------------------------- */
-
-	async #syncFilterState(instanceId: string, sourceName: string, filterName: string, enabled: boolean): Promise<void> {
-		for (const current of this.actions) {
-			if (!current.isKey()) {
-				continue;
-			}
-
-			const settings = await current.getSettings();
-			if (
-				settings.kind === "filter" &&
-				settings.instanceId === instanceId &&
-				settings.sourceName === sourceName &&
-				settings.filterName === filterName
-			) {
-				await current.setState(enabled ? 1 : 0);
-			}
-		}
-	}
-
-	async #refreshFilterStates(): Promise<void> {
-		for (const current of this.actions) {
-			const settings = await current.getSettings();
-			await this.#renderFilterState(current, settings);
-		}
-	}
-
-	/**
-	 * Reads the filter's live state so the key is correct as soon as it
-	 * appears, rather than only after the first press.
-	 */
-	async #renderFilterState(
-		target: KeyAction<TriggerSettings> | DialAction<TriggerSettings>,
-		settings: TriggerSettings,
-	): Promise<void> {
-		if (!target.isKey() || settings.kind !== "filter") {
-			return;
-		}
-
-		const { instanceId, sourceName, sourceUuid, filterName } = settings;
-		if (!instanceId || !sourceName || !filterName || !connectionManager.isConnected(instanceId)) {
-			return;
-		}
-
-		try {
-			const enabled = await isFilterEnabled(instanceId, { name: sourceName, uuid: sourceUuid }, filterName);
-			await target.setState(enabled ? 1 : 0);
-		} catch {
-			// The filter or source may have been removed; leave the key as-is
-			// rather than misreporting it as disabled.
-		}
 	}
 }
