@@ -36,5 +36,9 @@
  */
 bool obsx_vendor_register(void);
 
-/* Unregisters the vendor requests. Safe to call when registration failed. */
+/*
+ * Drops the vendor handle. Safe to call when registration failed, and safe to
+ * call from obs_module_unload(), where reaching back into obs-websocket is not
+ * — see the implementation for why the requests are left alone.
+ */
 void obsx_vendor_unregister(void);

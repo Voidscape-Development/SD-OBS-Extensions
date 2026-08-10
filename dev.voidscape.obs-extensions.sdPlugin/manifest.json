@@ -7,7 +7,7 @@
 			"Name": "OBS Trigger",
 			"UUID": "dev.voidscape.obs-extensions.trigger",
 			"Icon": "imgs/actions/trigger/icon",
-			"Tooltip": "Triggers an OBS hotkey, or enables, disables or toggles a source filter.",
+			"Tooltip": "Triggers an OBS hotkey, or enables or disables a source filter.",
 			"PropertyInspectorPath": "ui/obs-trigger.html",
 			"Controllers": [
 				"Keypad"
@@ -16,9 +16,26 @@
 				{
 					"Image": "imgs/actions/trigger/key",
 					"TitleAlignment": "middle"
+				}
+			]
+		},
+		{
+			"Name": "OBS Filter",
+			"UUID": "dev.voidscape.obs-extensions.filter",
+			"Icon": "imgs/actions/filter/icon",
+			"Tooltip": "Toggles a source filter, and shows whether it is currently on.",
+			"PropertyInspectorPath": "ui/obs-filter.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"DisableAutomaticStates": true,
+			"States": [
+				{
+					"Image": "imgs/actions/filter/key",
+					"TitleAlignment": "middle"
 				},
 				{
-					"Image": "imgs/actions/trigger/key-active",
+					"Image": "imgs/actions/filter/key-active",
 					"TitleAlignment": "middle"
 				}
 			]
@@ -35,10 +52,6 @@
 			"States": [
 				{
 					"Image": "imgs/actions/connection/key",
-					"TitleAlignment": "middle"
-				},
-				{
-					"Image": "imgs/actions/connection/key-active",
 					"TitleAlignment": "middle"
 				}
 			]

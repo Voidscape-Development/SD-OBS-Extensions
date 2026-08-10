@@ -15,6 +15,22 @@ import type { ConnectionSettings, DataSourceItem, ObsInstance } from "../obs/typ
 /** Sentinel used by the "all instances" dropdown entry. */
 const ALL_INSTANCES = "";
 
+/**
+ * Key artwork, swapped on the action's single state.
+ *
+ * The action deliberately has one state rather than two. A second state is
+ * Stream Deck's to flip as well as ours — it advances on every press, whether
+ * or not the connection actually came up — which is how a key ended up showing
+ * "connected" for an instance that was not, and it splits title styling across
+ * two appearances that have to be configured separately. With one state, what
+ * the key shows is a pure function of what the connection manager reports.
+ *
+ * The @2x artwork is used so the image is crisp on every device; Stream Deck
+ * scales it down for smaller keys.
+ */
+const IMAGE_CONNECTED = "imgs/actions/connection/key-active@2x.png";
+const IMAGE_IDLE = "imgs/actions/connection/key@2x.png";
+
 const DEFAULT_INSTANCE: Omit<ObsInstance, "id"> = {
 	name: "OBS",
 	host: "127.0.0.1",
@@ -35,6 +51,9 @@ type InstancePayload = {
  * Stream Deck has no plugin-level settings screen, so this action's property
  * inspector is where the shared instance list is edited; every other action
  * simply picks from it.
+ *
+ * The key shows connection status through its image and title, both re-derived
+ * from the connection manager on every change — see {@link IMAGE_CONNECTED}.
  */
 @action({ UUID: "dev.voidscape.obs-extensions.connection" })
 export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
@@ -195,6 +214,10 @@ export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
 	/**
 	 * Shows the instance name over its status. Keys default to no title, so an
 	 * unconfigured action reads as "no instances" rather than looking broken.
+	 *
+	 * Both the title and the image come from the connection manager every time,
+	 * so a key can only ever be as stale as the last event it was told about,
+	 * and re-rendering is always safe.
 	 */
 	async #render(
 		target: KeyAction<ConnectionSettings> | DialAction<ConnectionSettings>,
@@ -207,9 +230,7 @@ export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
 			const connected = states.filter((state) => state.status === "connected").length;
 
 			await target.setTitle(states.length === 0 ? "No OBS\ninstances" : `OBS\n${connected}/${states.length}`);
-			if (target.isKey()) {
-				await target.setState(connected > 0 && connected === states.length ? 1 : 0);
-			}
+			await this.#setImage(target, connected > 0 && connected === states.length);
 
 			return;
 		}
@@ -219,9 +240,7 @@ export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
 
 		if (!instance || !state) {
 			await target.setTitle("Missing\ninstance");
-			if (target.isKey()) {
-				await target.setState(0);
-			}
+			await this.#setImage(target, false);
 
 			return;
 		}
@@ -234,8 +253,15 @@ export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
 		}[state.status];
 
 		await target.setTitle(`${instance.name}\n${statusLabel}`);
+		await this.#setImage(target, state.status === "connected");
+	}
+
+	async #setImage(
+		target: KeyAction<ConnectionSettings> | DialAction<ConnectionSettings>,
+		connected: boolean,
+	): Promise<void> {
 		if (target.isKey()) {
-			await target.setState(state.status === "connected" ? 1 : 0);
+			await target.setImage(connected ? IMAGE_CONNECTED : IMAGE_IDLE);
 		}
 	}
 }

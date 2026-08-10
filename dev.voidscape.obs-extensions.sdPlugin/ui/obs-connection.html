@@ -5,13 +5,34 @@
 		<meta charset="utf-8" />
 		<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
 		<style>
+			/*
+			 * The property inspector is a bare page: sdpi-components styles its
+			 * own elements inside their shadow roots and leaves everything else
+			 * at the browser default, which is black text. Anything written
+			 * outside a component therefore has to state its own colour, or it
+			 * renders black on the Stream Deck's dark panel.
+			 */
+			:root {
+				color-scheme: dark;
+				--obsx-text: #d8d8d8;
+				--obsx-text-muted: #9b9b9b;
+				--obsx-warn: #f5a623;
+				--obsx-surface: #3d3d3d;
+				--obsx-surface-hover: #4a4a4a;
+				--obsx-border: #4f4f4f;
+			}
+
+			body {
+				color: var(--obsx-text);
+			}
+
 			.heading {
 				margin: 12px 0 4px 0;
 				padding-top: 10px;
 				border-top: 1px solid rgba(255, 255, 255, 0.1);
 				font-size: 9pt;
 				font-weight: 600;
-				opacity: 0.75;
+				color: var(--obsx-text-muted);
 			}
 
 			.buttons {
@@ -24,15 +45,15 @@
 				flex: 1;
 				padding: 4px 8px;
 				font-size: 9pt;
-				color: #d8d8d8;
-				background: #3d3d3d;
-				border: 1px solid #4f4f4f;
+				color: var(--obsx-text);
+				background: var(--obsx-surface);
+				border: 1px solid var(--obsx-border);
 				border-radius: 4px;
 				cursor: pointer;
 			}
 
 			.buttons button:hover:not(:disabled) {
-				background: #4a4a4a;
+				background: var(--obsx-surface-hover);
 			}
 
 			.buttons button:disabled {
@@ -43,13 +64,12 @@
 			.status {
 				padding: 6px 0 0 108px;
 				font-size: 9pt;
-				opacity: 0.75;
+				color: var(--obsx-text-muted);
 				line-height: 1.4;
 			}
 
 			.status.error {
-				color: #f5a623;
-				opacity: 1;
+				color: var(--obsx-warn);
 			}
 		</style>
 	</head>

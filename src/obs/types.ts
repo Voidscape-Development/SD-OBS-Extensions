@@ -53,6 +53,15 @@ export type TriggerKind = "globalHotkey" | "sourceHotkey" | "filter";
 export type FilterOperation = "toggle" | "enable" | "disable";
 
 /**
+ * The subset of {@link FilterOperation} a trigger key offers.
+ *
+ * Toggling belongs to the OBS Filter action, which tracks the filter's real
+ * state and can show it; a trigger key is fire-and-forget, so it only ever
+ * drives a filter to a known state.
+ */
+export type FilterSetOperation = Exclude<FilterOperation, "toggle">;
+
+/**
  * Identity of a hotkey, persisted in an action's settings.
  *
  * Deliberately *not* an `obs_hotkey_id`: OBS assigns those from an
@@ -75,22 +84,35 @@ export type HotkeyTarget = {
 	description?: string;
 };
 
-/** Settings for the trigger action. */
-export type TriggerSettings = {
+/**
+ * Settings shared by every action that targets a source.
+ *
+ * The property inspector stores the source by name, since that is what its
+ * dropdown shows; the UUID is resolved alongside it so requests can target the
+ * source by UUID and survive a later rename in OBS.
+ */
+export type SourceScopedSettings = {
 	instanceId?: string;
-	kind?: TriggerKind;
-
-	/** Selected source, for `sourceHotkey` and `filter`. */
 	sourceName?: string;
 	sourceUuid?: string;
+} & JsonObject;
+
+/** Settings for the trigger action. */
+export type TriggerSettings = {
+	kind?: TriggerKind;
 
 	/** Serialised {@link HotkeyTarget}, for `globalHotkey` and `sourceHotkey`. */
 	hotkey?: string;
 
 	/** For `filter`. */
 	filterName?: string;
-	filterOperation?: FilterOperation;
-} & JsonObject;
+	filterOperation?: FilterSetOperation;
+} & SourceScopedSettings;
+
+/** Settings for the filter action. */
+export type FilterSettings = {
+	filterName?: string;
+} & SourceScopedSettings;
 
 /** Settings for the connection action. */
 export type ConnectionSettings = {

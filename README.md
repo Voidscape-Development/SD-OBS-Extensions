@@ -23,22 +23,44 @@ screen, so this action's property inspector is where connections are added,
 edited and removed; every other action just picks one from a dropdown. Placed
 on a key it also works as a connect/disconnect toggle with live status.
 
+The key has a single state, and its title and image are re-derived from the
+live connection status every time that status changes. A second state would be
+Stream Deck's to flip as well as the plugin's — it advances on every press,
+whether or not the connection came up — which is how a key could end up
+claiming to be connected when it was not.
+
 Connections are held open with automatic reconnection and exponential backoff,
 so pressing a trigger key fires immediately rather than paying for a handshake.
 
 ### OBS Trigger
 
-One key, three things it can do against a chosen instance:
+A single-state, fire-and-forget key. Three things it can do against a chosen
+instance:
 
 - **Global hotkey** — OBS's frontend hotkeys (start/stop streaming, recording,
   replay buffer, virtual camera, studio mode, screenshots, and so on).
 - **Source hotkey** — hotkeys belonging to a specific source, picked from an
   alphabetical source list: mute/unmute and push-to-talk on audio sources,
   play/pause/restart on media and VLC sources, refresh on browser sources.
-- **Filter** — enable, disable, or toggle a filter on any source or scene.
+- **Filter** — enable or disable a filter on any source or scene.
 
-Filter keys track their filter's real state through obs-websocket events, so
-they stay correct even when the filter is changed from inside OBS.
+Firing a hotkey tells the plugin nothing about what happened inside OBS, so the
+key has nothing to report back: it shows one look, styled once, and flashes the
+standard OK or alert on the press itself. Toggling, and seeing state, is the
+OBS Filter action's job.
+
+### OBS Filter
+
+Toggles one filter on a source or scene, and shows whether that filter is
+currently on.
+
+This is the one thing the plugin can genuinely track, so it is the one action
+with two states. They are driven only by what OBS reports — through
+`SourceFilterEnableStateChanged` events, and by re-reading the filter whenever
+the key appears or the connection comes back — never by the press itself.
+Stream Deck's own automatic state switching is turned off for this action, so a
+filter flipped from inside OBS, from a second key, or by another client lands
+on the key correctly, and a press that fails leaves the key showing the truth.
 
 ## Why the companion exists
 

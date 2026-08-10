@@ -371,14 +371,23 @@ bool obsx_vendor_register(void)
 	return true;
 }
 
+/*
+ * Deliberately does not call obs_websocket_vendor_unregister_request().
+ *
+ * The only caller is obs_module_unload(), and libobs unloads modules in the
+ * reverse of the order it loaded them, as the last thing obs_shutdown() does.
+ * obs-websocket therefore tends to be gone by the time this runs, having
+ * destroyed the proc handler that obs-websocket-api.h caches in its static
+ * `_ph` the first time a vendor call is made. Calling through that stale
+ * handler faults inside proc_handler_call() and takes OBS down on exit with a
+ * c0000005 rather than closing cleanly.
+ *
+ * Nothing is leaked by staying quiet: obs-websocket destroys its vendor
+ * registry, and with it every request registered against a vendor, when it
+ * unloads. libobs has no path that unloads a module while OBS keeps running,
+ * so there is no case where these requests need tearing down early.
+ */
 void obsx_vendor_unregister(void)
 {
-	if (!vendor)
-		return;
-
-	obs_websocket_vendor_unregister_request(vendor, OBSX_REQUEST_GET_VERSION);
-	obs_websocket_vendor_unregister_request(vendor, OBSX_REQUEST_GET_HOTKEYS);
-	obs_websocket_vendor_unregister_request(vendor, OBSX_REQUEST_TRIGGER_HOTKEY);
-
 	vendor = NULL;
 }
