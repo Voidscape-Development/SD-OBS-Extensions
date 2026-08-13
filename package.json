@@ -3,8 +3,8 @@
     "scripts": {
         "build": "rollup -c",
         "check": "tsc --noEmit",
-        "format": "prettier --write \"src/**/*.ts\" \"dev.voidscape.obs-extensions.sdPlugin/ui/*.html\" rollup.config.mjs",
-        "format:check": "prettier --check \"src/**/*.ts\" \"dev.voidscape.obs-extensions.sdPlugin/ui/*.html\" rollup.config.mjs",
+        "format": "prettier --write \"src/**/*.ts\" \"dev.voidscape.obs-extensions.sdPlugin/ui/*.{html,css}\" rollup.config.mjs",
+        "format:check": "prettier --check \"src/**/*.ts\" \"dev.voidscape.obs-extensions.sdPlugin/ui/*.{html,css}\" rollup.config.mjs",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart dev.voidscape.obs-extensions\""
     },
     "type": "module",

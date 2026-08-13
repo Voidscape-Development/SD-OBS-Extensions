@@ -4,36 +4,7 @@
 		<title>OBS Filter Settings</title>
 		<meta charset="utf-8" />
 		<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
-		<style>
-			/*
-			 * The property inspector is a bare page: sdpi-components styles its
-			 * own elements inside their shadow roots and leaves everything else
-			 * at the browser default, which is black text. Anything written
-			 * outside a component therefore has to state its own colour, or it
-			 * renders black on the Stream Deck's dark panel.
-			 */
-			:root {
-				color-scheme: dark;
-				--obsx-text: #d8d8d8;
-				--obsx-text-muted: #9b9b9b;
-				--obsx-warn: #f5a623;
-			}
-
-			body {
-				color: var(--obsx-text);
-			}
-
-			.hint {
-				padding: 4px 0 8px 0;
-				font-size: 9pt;
-				color: var(--obsx-text-muted);
-				line-height: 1.4;
-			}
-
-			.hint.warn {
-				color: var(--obsx-warn);
-			}
-		</style>
+		<link rel="stylesheet" href="property-inspector.css" />
 	</head>
 
 	<body>
