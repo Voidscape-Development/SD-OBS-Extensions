@@ -17,13 +17,133 @@
 			></sdpi-select>
 		</sdpi-item>
 
-		<sdpi-item label="Source">
-			<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
-		</sdpi-item>
+		<!--
+			Both sections start hidden. Which one applies depends on whether this
+			action was dropped on a key or on a dial, which the plugin reports
+			alongside the rest of its capabilities; showing neither until then
+			keeps the wrong one from flashing up first.
+		-->
 
-		<sdpi-item label="Filter">
-			<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
-		</sdpi-item>
+		<!-- Key -->
+		<div id="keypad" style="display: none">
+			<sdpi-item label="Source">
+				<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item label="Filter">
+				<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
+			</sdpi-item>
+		</div>
+
+		<!-- Dial -->
+		<div id="encoder" style="display: none">
+			<div class="hint">
+				Turning either way and pressing each drive their own filter, independently. Tapping the touchscreen does the
+				same as pressing.
+			</div>
+
+			<div class="heading">Turn left</div>
+
+			<sdpi-item id="turnLeft-row-source" label="Source">
+				<sdpi-select
+					id="turnLeft-source"
+					setting="turnLeftSourceName"
+					datasource="sourcesTurnLeft"
+					placeholder="Select a source"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnLeft-row-filter" label="Filter">
+				<sdpi-select
+					id="turnLeft-filter"
+					setting="turnLeftFilterName"
+					datasource="filtersTurnLeft"
+					placeholder="Select a filter"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnLeft-row-op" label="Action">
+				<sdpi-select id="turnLeft-op" setting="turnLeftFilterOperation" default="disable">
+					<option value="none">Nothing</option>
+					<option value="toggle">Toggle</option>
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div class="heading">Turn right</div>
+
+			<sdpi-item id="turnRight-row-source" label="Source">
+				<sdpi-select
+					id="turnRight-source"
+					setting="turnRightSourceName"
+					datasource="sourcesTurnRight"
+					placeholder="Select a source"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnRight-row-filter" label="Filter">
+				<sdpi-select
+					id="turnRight-filter"
+					setting="turnRightFilterName"
+					datasource="filtersTurnRight"
+					placeholder="Select a filter"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnRight-row-op" label="Action">
+				<sdpi-select id="turnRight-op" setting="turnRightFilterOperation" default="enable">
+					<option value="none">Nothing</option>
+					<option value="toggle">Toggle</option>
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div class="heading">Press or tap</div>
+
+			<sdpi-item id="press-row-source" label="Source">
+				<sdpi-select
+					id="press-source"
+					setting="pressSourceName"
+					datasource="sourcesPress"
+					placeholder="Select a source"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="press-row-filter" label="Filter">
+				<sdpi-select
+					id="press-filter"
+					setting="pressFilterName"
+					datasource="filtersPress"
+					placeholder="Select a filter"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="press-row-op" label="Action">
+				<sdpi-select id="press-op" setting="pressFilterOperation" default="toggle">
+					<option value="none">Nothing</option>
+					<option value="toggle">Toggle</option>
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div class="heading">Touchscreen</div>
+
+			<sdpi-item label="Show state for">
+				<sdpi-select id="feedback" setting="feedbackInteraction" default="press">
+					<option value="turnLeft">Turn left</option>
+					<option value="turnRight">Turn right</option>
+					<option value="press">Press or tap</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div class="hint">
+				Each interaction can point at a different filter, so the touchscreen follows one of them. An interaction with no
+				filter chosen falls through to one that has.
+			</div>
+		</div>
 
 		<div id="hint" class="hint"></div>
 
@@ -31,6 +151,13 @@
 			(() => {
 				const client = SDPIComponents.streamDeckClient;
 				const el = (id) => document.getElementById(id);
+
+				/**
+				 * The dial interactions, named as their settings keys are prefixed;
+				 * the key's single filter is stored unprefixed, and its rows are
+				 * named to match.
+				 */
+				const SLOTS = ["turnLeft", "turnRight", "press"];
 
 				/**
 				 * The plugin reads the action's persisted settings to work out what
@@ -48,34 +175,57 @@
 					}, SETTLE_MS);
 				}
 
-				async function updateHint() {
+				async function capabilities() {
+					const response = await client.get(
+						"sendToPlugin",
+						"sendToPropertyInspector",
+						(msg) => msg.payload?.event === "capabilities",
+						{ event: "capabilities" },
+					);
+
+					return response.payload;
+				}
+
+				function showHint({ connected }) {
 					const hint = el("hint");
 
-					try {
-						const response = await client.get(
-							"sendToPlugin",
-							"sendToPropertyInspector",
-							(msg) => msg.payload?.event === "capabilities",
-							{ event: "capabilities" },
-						);
+					hint.classList.toggle("warn", !connected);
+					hint.textContent = connected
+						? "The action shows whether the filter is on, and follows changes made in OBS."
+						: "Not connected. Connect this instance from an OBS Connection action to load sources and filters.";
+				}
 
-						hint.classList.toggle("warn", !response.payload.connected);
-						hint.textContent = response.payload.connected
-							? "The key shows whether the filter is on, and follows changes made in OBS."
-							: "Not connected. Connect this instance from an OBS Connection action to load sources and filters.";
+				async function updateHint() {
+					try {
+						showHint(await capabilities());
 					} catch {
-						hint.textContent = "";
+						el("hint").textContent = "";
 					}
 				}
 
 				el("instance").addEventListener("valuechange", () => {
-					refresh("source", "filter");
+					refresh("source", "filter", ...SLOTS.flatMap((slot) => [`${slot}-source`, `${slot}-filter`]));
 					updateHint();
 				});
 
 				el("source").addEventListener("valuechange", () => refresh("filter"));
 
-				updateHint();
+				for (const slot of SLOTS) {
+					el(`${slot}-source`).addEventListener("valuechange", () => refresh(`${slot}-filter`));
+				}
+
+				(async () => {
+					const state = await capabilities().catch(() => null);
+
+					// The key layout is the fallback: it is by far the more common
+					// case, and it is the one that matches settings written before
+					// this action ran on dials at all.
+					el(state?.controller === "Encoder" ? "encoder" : "keypad").style.display = "";
+
+					if (state) {
+						showHint(state);
+					}
+				})();
 			})();
 		</script>
 	</body>

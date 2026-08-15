@@ -7,11 +7,21 @@
 			"Name": "OBS Trigger",
 			"UUID": "dev.voidscape.obs-extensions.trigger",
 			"Icon": "imgs/actions/trigger/icon",
-			"Tooltip": "Triggers an OBS hotkey, or enables or disables a source filter.",
+			"Tooltip": "Triggers an OBS hotkey, or enables or disables a source filter. On a dial, turning either way and pressing each trigger their own.",
 			"PropertyInspectorPath": "ui/obs-trigger.html",
 			"Controllers": [
-				"Keypad"
+				"Keypad",
+				"Encoder"
 			],
+			"Encoder": {
+				"Icon": "imgs/actions/trigger/key",
+				"layout": "$A1",
+				"TriggerDescription": {
+					"Rotate": "Trigger",
+					"Push": "Trigger",
+					"Touch": "Trigger"
+				}
+			},
 			"States": [
 				{
 					"Image": "imgs/actions/trigger/key",
@@ -23,11 +33,21 @@
 			"Name": "OBS Filter",
 			"UUID": "dev.voidscape.obs-extensions.filter",
 			"Icon": "imgs/actions/filter/icon",
-			"Tooltip": "Toggles a source filter, and shows whether it is currently on.",
+			"Tooltip": "Toggles a source filter, and shows whether it is currently on. On a dial, turning either way and pressing each drive their own.",
 			"PropertyInspectorPath": "ui/obs-filter.html",
 			"Controllers": [
-				"Keypad"
+				"Keypad",
+				"Encoder"
 			],
+			"Encoder": {
+				"Icon": "imgs/actions/filter/key",
+				"layout": "$A1",
+				"TriggerDescription": {
+					"Rotate": "Disable / enable",
+					"Push": "Toggle",
+					"Touch": "Toggle"
+				}
+			},
 			"DisableAutomaticStates": true,
 			"States": [
 				{
