@@ -17,36 +17,190 @@
 			></sdpi-select>
 		</sdpi-item>
 
-		<sdpi-item label="Trigger">
-			<sdpi-select id="kind" setting="kind" default="globalHotkey">
-				<option value="globalHotkey">Global hotkey</option>
-				<option value="sourceHotkey">Source hotkey</option>
-				<option value="filter">Filter</option>
-			</sdpi-select>
-		</sdpi-item>
+		<!--
+			Both sections start hidden. Which one applies depends on whether this
+			action was dropped on a key or on a dial, which the plugin reports
+			alongside the rest of its capabilities; showing neither until then
+			keeps the wrong one from flashing up first.
+		-->
 
-		<sdpi-item id="row-source" label="Source">
-			<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
-		</sdpi-item>
+		<!-- Key -->
+		<div id="keypad" style="display: none">
+			<sdpi-item label="Trigger">
+				<sdpi-select id="kind" setting="kind" default="globalHotkey">
+					<option value="globalHotkey">Global hotkey</option>
+					<option value="sourceHotkey">Source hotkey</option>
+					<option value="filter">Filter</option>
+				</sdpi-select>
+			</sdpi-item>
 
-		<sdpi-item id="row-hotkey" label="Hotkey">
-			<sdpi-select id="hotkey" setting="hotkey" datasource="hotkeys" placeholder="Select a hotkey"></sdpi-select>
-		</sdpi-item>
+			<sdpi-item id="row-source" label="Source">
+				<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
+			</sdpi-item>
 
-		<sdpi-item id="row-filter" label="Filter">
-			<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
-		</sdpi-item>
+			<sdpi-item id="row-hotkey" label="Hotkey">
+				<sdpi-select id="hotkey" setting="hotkey" datasource="hotkeys" placeholder="Select a hotkey"></sdpi-select>
+			</sdpi-item>
 
-		<sdpi-item id="row-filter-op" label="Action">
-			<sdpi-select id="filterOperation" setting="filterOperation" default="enable">
-				<option value="enable">Enable</option>
-				<option value="disable">Disable</option>
-			</sdpi-select>
-		</sdpi-item>
+			<sdpi-item id="row-filter" label="Filter">
+				<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
+			</sdpi-item>
 
-		<!-- Hidden until the layout is applied, so it does not flash on a hotkey key. -->
-		<div id="filter-hint" class="hint" style="display: none">
-			Use the OBS Filter action to toggle a filter and see whether it is on.
+			<sdpi-item id="row-filterOp" label="Action">
+				<sdpi-select id="filterOperation" setting="filterOperation" default="enable">
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div id="row-filterHint" class="hint">Use the OBS Filter action to toggle a filter and see whether it is on.</div>
+		</div>
+
+		<!-- Dial -->
+		<div id="encoder" style="display: none">
+			<div class="hint">
+				Turning either way and pressing each trigger whatever they are set to, independently. Leave one on Nothing to
+				have it do nothing at all. Tapping the touchscreen does the same as pressing.
+			</div>
+
+			<div class="heading">Turn left</div>
+
+			<sdpi-item label="Trigger">
+				<sdpi-select id="turnLeft-kind" setting="turnLeftKind" default="none">
+					<option value="none">Nothing</option>
+					<option value="globalHotkey">Global hotkey</option>
+					<option value="sourceHotkey">Source hotkey</option>
+					<option value="filter">Filter</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnLeft-row-source" label="Source">
+				<sdpi-select
+					id="turnLeft-source"
+					setting="turnLeftSourceName"
+					datasource="sourcesTurnLeft"
+					placeholder="Select a source"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnLeft-row-hotkey" label="Hotkey">
+				<sdpi-select
+					id="turnLeft-hotkey"
+					setting="turnLeftHotkey"
+					datasource="hotkeysTurnLeft"
+					placeholder="Select a hotkey"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnLeft-row-filter" label="Filter">
+				<sdpi-select
+					id="turnLeft-filter"
+					setting="turnLeftFilterName"
+					datasource="filtersTurnLeft"
+					placeholder="Select a filter"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnLeft-row-filterOp" label="Action">
+				<sdpi-select id="turnLeft-filterOperation" setting="turnLeftFilterOperation" default="enable">
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div class="heading">Turn right</div>
+
+			<sdpi-item label="Trigger">
+				<sdpi-select id="turnRight-kind" setting="turnRightKind" default="none">
+					<option value="none">Nothing</option>
+					<option value="globalHotkey">Global hotkey</option>
+					<option value="sourceHotkey">Source hotkey</option>
+					<option value="filter">Filter</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnRight-row-source" label="Source">
+				<sdpi-select
+					id="turnRight-source"
+					setting="turnRightSourceName"
+					datasource="sourcesTurnRight"
+					placeholder="Select a source"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnRight-row-hotkey" label="Hotkey">
+				<sdpi-select
+					id="turnRight-hotkey"
+					setting="turnRightHotkey"
+					datasource="hotkeysTurnRight"
+					placeholder="Select a hotkey"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnRight-row-filter" label="Filter">
+				<sdpi-select
+					id="turnRight-filter"
+					setting="turnRightFilterName"
+					datasource="filtersTurnRight"
+					placeholder="Select a filter"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="turnRight-row-filterOp" label="Action">
+				<sdpi-select id="turnRight-filterOperation" setting="turnRightFilterOperation" default="enable">
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div class="heading">Press or tap</div>
+
+			<sdpi-item label="Trigger">
+				<sdpi-select id="press-kind" setting="pressKind" default="none">
+					<option value="none">Nothing</option>
+					<option value="globalHotkey">Global hotkey</option>
+					<option value="sourceHotkey">Source hotkey</option>
+					<option value="filter">Filter</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="press-row-source" label="Source">
+				<sdpi-select
+					id="press-source"
+					setting="pressSourceName"
+					datasource="sourcesPress"
+					placeholder="Select a source"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="press-row-hotkey" label="Hotkey">
+				<sdpi-select
+					id="press-hotkey"
+					setting="pressHotkey"
+					datasource="hotkeysPress"
+					placeholder="Select a hotkey"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="press-row-filter" label="Filter">
+				<sdpi-select
+					id="press-filter"
+					setting="pressFilterName"
+					datasource="filtersPress"
+					placeholder="Select a filter"
+				></sdpi-select>
+			</sdpi-item>
+
+			<sdpi-item id="press-row-filterOp" label="Action">
+				<sdpi-select id="press-filterOperation" setting="pressFilterOperation" default="enable">
+					<option value="enable">Enable</option>
+					<option value="disable">Disable</option>
+				</sdpi-select>
+			</sdpi-item>
+
+			<div id="encoder-filterHint" class="hint">
+				Use the OBS Filter action on the dial to toggle filters and see whether they are on.
+			</div>
 		</div>
 
 		<div id="hint" class="hint"></div>
@@ -54,31 +208,53 @@
 		<script>
 			(() => {
 				const client = SDPIComponents.streamDeckClient;
-
 				const el = (id) => document.getElementById(id);
-				const rows = {
-					source: el("row-source"),
-					hotkey: el("row-hotkey"),
-					filter: el("row-filter"),
-					filterOp: el("row-filter-op"),
-					filterHint: el("filter-hint"),
-				};
+
+				/**
+				 * The dial interactions, named as their settings keys are prefixed;
+				 * `null` stands for the key, whose single trigger is stored
+				 * unprefixed and whose rows are therefore named without a prefix.
+				 */
+				const SLOTS = ["turnLeft", "turnRight", "press"];
+
+				const prefixed = (slot, name) => (slot ? `${slot}-${name}` : name);
+				const row = (slot, name) => el(prefixed(slot, `row-${name}`));
 
 				/**
 				 * Which rows each trigger type uses. Hiding via style rather than
 				 * the hidden attribute, since the components set their own display.
 				 */
 				const LAYOUT = {
+					none: [],
 					globalHotkey: ["hotkey"],
 					sourceHotkey: ["source", "hotkey"],
 					filter: ["source", "filter", "filterOp", "filterHint"],
 				};
 
-				function applyLayout(kind) {
-					const visible = LAYOUT[kind] ?? LAYOUT.globalHotkey;
-					for (const [name, row] of Object.entries(rows)) {
-						row.style.display = visible.includes(name) ? "" : "none";
+				const ROWS = ["source", "hotkey", "filter", "filterOp", "filterHint"];
+
+				function applyLayout(slot, kind) {
+					const visible = LAYOUT[kind] ?? [];
+
+					for (const name of ROWS) {
+						const target = row(slot, name);
+						if (target) {
+							target.style.display = visible.includes(name) ? "" : "none";
+						}
 					}
+				}
+
+				/**
+				 * What each dial interaction is currently set to, tracked here so
+				 * the shared filter hint below them can be shown for any of the
+				 * three without re-reading all three components.
+				 */
+				const dialKinds = {};
+
+				/** The dial's one filter hint covers all three of its interactions. */
+				function applyDialFilterHint() {
+					const anyFilter = SLOTS.some((slot) => dialKinds[slot] === "filter");
+					el("encoder-filterHint").style.display = anyFilter ? "" : "none";
 				}
 
 				/**
@@ -97,60 +273,103 @@
 					}, SETTLE_MS);
 				}
 
+				async function capabilities() {
+					const response = await client.get(
+						"sendToPlugin",
+						"sendToPropertyInspector",
+						(msg) => msg.payload?.event === "capabilities",
+						{ event: "capabilities" },
+					);
+
+					return response.payload;
+				}
+
+				function showHint({ connected, companion, supportsHotkeyContext }) {
+					const hint = el("hint");
+					hint.classList.remove("warn");
+
+					if (!connected) {
+						hint.textContent =
+							"Not connected. Connect this instance from an OBS Connection action to load sources and hotkeys.";
+						hint.classList.add("warn");
+						return;
+					}
+
+					if (companion) {
+						hint.textContent =
+							"Companion OBS plugin detected — hotkeys show their real OBS names and survive source renames.";
+						return;
+					}
+
+					hint.textContent = supportsHotkeyContext
+						? "Install the companion OBS plugin for full hotkey names and rename-proof targeting."
+						: "obs-websocket 5.4.0 or later is required for source hotkeys. Update OBS, or install the companion OBS plugin.";
+
+					if (!supportsHotkeyContext) {
+						hint.classList.add("warn");
+					}
+				}
+
 				async function updateHint() {
 					try {
-						const response = await client.get(
-							"sendToPlugin",
-							"sendToPropertyInspector",
-							(msg) => msg.payload?.event === "capabilities",
-							{ event: "capabilities" },
-						);
-
-						const { connected, companion, supportsHotkeyContext } = response.payload;
-						const hint = el("hint");
-						hint.classList.remove("warn");
-
-						if (!connected) {
-							hint.textContent =
-								"Not connected. Connect this instance from an OBS Connection action to load sources and hotkeys.";
-							hint.classList.add("warn");
-							return;
-						}
-
-						if (companion) {
-							hint.textContent =
-								"Companion OBS plugin detected — hotkeys show their real OBS names and survive source renames.";
-							return;
-						}
-
-						hint.textContent = supportsHotkeyContext
-							? "Install the companion OBS plugin for full hotkey names and rename-proof targeting."
-							: "obs-websocket 5.4.0 or later is required for source hotkeys. Update OBS, or install the companion OBS plugin.";
-
-						if (!supportsHotkeyContext) {
-							hint.classList.add("warn");
-						}
+						showHint(await capabilities());
 					} catch {
 						el("hint").textContent = "";
 					}
 				}
 
 				el("instance").addEventListener("valuechange", () => {
-					refresh("source", "hotkey", "filter");
+					refresh(
+						"source",
+						"hotkey",
+						"filter",
+						...SLOTS.flatMap((slot) => [`${slot}-source`, `${slot}-hotkey`, `${slot}-filter`]),
+					);
 					updateHint();
 				});
 
 				el("kind").addEventListener("valuechange", (ev) => {
-					applyLayout(ev.target.value);
+					applyLayout(null, ev.target.value);
 					refresh("hotkey");
 				});
 
 				el("source").addEventListener("valuechange", () => refresh("hotkey", "filter"));
 
+				for (const slot of SLOTS) {
+					el(`${slot}-kind`).addEventListener("valuechange", (ev) => {
+						dialKinds[slot] = ev.target.value;
+
+						applyLayout(slot, dialKinds[slot]);
+						applyDialFilterHint();
+						refresh(`${slot}-hotkey`);
+					});
+
+					el(`${slot}-source`).addEventListener("valuechange", () => refresh(`${slot}-hotkey`, `${slot}-filter`));
+				}
+
 				(async () => {
-					const payload = await client.getSettings();
-					applyLayout(payload?.settings?.kind ?? "globalHotkey");
-					await updateHint();
+					const state = await capabilities().catch(() => null);
+					const settings = (await client.getSettings())?.settings ?? {};
+
+					// The key layout is the fallback: it is by far the more common
+					// case, and it is the one that matches settings written before
+					// this action ran on dials at all.
+					if (state?.controller === "Encoder") {
+						for (const slot of SLOTS) {
+							dialKinds[slot] = settings[`${slot}Kind`] ?? "none";
+							applyLayout(slot, dialKinds[slot]);
+						}
+
+						applyDialFilterHint();
+						el("encoder").style.display = "";
+					} else {
+						applyLayout(null, settings.kind ?? "globalHotkey");
+						el("keypad").style.display = "";
+					}
+
+					if (state) {
+						showHint(state);
+					}
 				})();
 			})();
 		</script>

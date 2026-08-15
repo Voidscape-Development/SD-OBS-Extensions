@@ -1,8 +1,16 @@
 import streamDeck, { type DialAction, type KeyAction } from "@elgato/streamdeck";
 
 import { connectionManager } from "../obs/connection-manager";
-import { findSource, listFilters, listSources } from "../obs/sources";
-import type { DataSourceItem, DataSourceResult, SourceScopedSettings } from "../obs/types";
+import { listFilters, listSources } from "../obs/sources";
+import {
+	DIAL_INTERACTIONS,
+	type DataSourceItem,
+	type DataSourceResult,
+	type DialInteraction,
+	type SourceScope,
+	type SourceScopedSettings,
+} from "../obs/types";
+import { interactionKey } from "./dial";
 
 /**
  * Dropdown contents and the odd shared chore, for the actions whose property
@@ -20,8 +28,8 @@ export function instanceItems(): DataSourceItem[] {
 }
 
 /** Inputs and scenes on the selected instance, grouped and alphabetical. */
-export async function sourceItems(settings: SourceScopedSettings): Promise<DataSourceResult> {
-	const { instanceId } = settings;
+export async function sourceItems(scope: SourceScope): Promise<DataSourceResult> {
+	const { instanceId } = scope;
 	if (!instanceId || !connectionManager.isConnected(instanceId)) {
 		return notice("Connect to an OBS instance first");
 	}
@@ -52,8 +60,8 @@ export async function sourceItems(settings: SourceScopedSettings): Promise<DataS
 }
 
 /** Filters on the selected source. */
-export async function filterItems(settings: SourceScopedSettings): Promise<DataSourceResult> {
-	const { instanceId, sourceName, sourceUuid } = settings;
+export async function filterItems(scope: SourceScope): Promise<DataSourceResult> {
+	const { instanceId, sourceName, sourceUuid } = scope;
 	if (!instanceId || !connectionManager.isConnected(instanceId)) {
 		return notice("Connect to an OBS instance first");
 	}
@@ -76,25 +84,52 @@ export async function filterItems(settings: SourceScopedSettings): Promise<DataS
 }
 
 /**
- * Resolves the selected source's UUID and stores it alongside the name, so
- * requests can target the source by UUID; a rename in OBS then leaves the key
- * working rather than pointing at a name that no longer exists.
+ * Resolves the selected sources' UUIDs and stores them alongside their names,
+ * so requests can target a source by UUID; a rename in OBS then leaves the
+ * action working rather than pointing at a name that no longer exists.
+ *
+ * A key has one source to resolve, a dial one per interaction, and they are
+ * written back together so a dial costs the same single settings round trip a
+ * key always did.
  */
-export async function backfillSourceUuid<T extends SourceScopedSettings>(
+export async function backfillSourceUuids<T extends SourceScopedSettings>(
 	target: KeyAction<T> | DialAction<T>,
 	settings: T,
 ): Promise<void> {
-	const { instanceId, sourceName } = settings;
-	if (!instanceId || !sourceName || !connectionManager.isConnected(instanceId)) {
+	const { instanceId } = settings;
+	if (!instanceId || !connectionManager.isConnected(instanceId)) {
 		return;
 	}
 
+	/** A key's single source is stored unprefixed, hence the `undefined`. */
+	const interactions: (DialInteraction | undefined)[] = target.isDial() ? [...DIAL_INTERACTIONS] : [undefined];
+	const updates: Record<string, string> = {};
+
 	try {
-		const source = await findSource(instanceId, sourceName);
-		if (source?.uuid && source.uuid !== settings.sourceUuid) {
-			await target.setSettings({ ...settings, sourceUuid: source.uuid });
+		const sources = await listSources(instanceId);
+
+		for (const interaction of interactions) {
+			const nameKey = interaction ? interactionKey(interaction, "sourceName") : "sourceName";
+			const uuidKey = interaction ? interactionKey(interaction, "sourceUuid") : "sourceUuid";
+
+			const sourceName = settings[nameKey];
+			if (typeof sourceName !== "string" || !sourceName) {
+				continue;
+			}
+
+			const uuid = sources.find((source) => source.name === sourceName)?.uuid;
+			if (uuid && uuid !== settings[uuidKey]) {
+				updates[uuidKey] = uuid;
+			}
 		}
 	} catch {
 		// Best effort; requests fall back to targeting by name.
+		return;
+	}
+
+	// Only when something actually changed: writing settings comes straight
+	// back as a settings event, which is where this is called from.
+	if (Object.keys(updates).length > 0) {
+		await target.setSettings({ ...settings, ...updates } as T);
 	}
 }

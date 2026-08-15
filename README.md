@@ -49,6 +49,15 @@ key has nothing to report back: it shows one look, styled once, and flashes the
 standard OK or alert on the press itself. Toggling, and seeing state, is the
 OBS Filter action's job.
 
+On a Stream Deck + dial the same three choices are offered three times over —
+once for turning left, once for turning right, once for pressing — and each is
+independent. One interaction can fire a global hotkey while another enables a
+filter on an unrelated source, and any of them can be left set to *Nothing*.
+Tapping the touchscreen does whatever pressing does; it sits directly above its
+own dial, so splitting the two would only produce a second setting that has to
+agree with the first. The touchscreen shows the last thing sent to OBS, which
+remains the most a trigger ever knows.
+
 ### OBS Filter
 
 Toggles one filter on a source or scene, and shows whether that filter is
@@ -61,6 +70,20 @@ the key appears or the connection comes back — never by the press itself.
 Stream Deck's own automatic state switching is turned off for this action, so a
 filter flipped from inside OBS, from a second key, or by another client lands
 on the key correctly, and a press that fails leaves the key showing the truth.
+
+On a dial, turning left, turning right and pressing each get their own source,
+filter and operation — enable, disable, toggle, or nothing. The defaults read
+the way a dial looks: turning down disables, turning up enables, pressing
+toggles. Since the three may point at different filters, the touchscreen can
+only follow one of them, so which one is itself a setting; it defaults to the
+press, and falls through to an interaction that has a filter when the nominated
+one does not. What it shows is live state, on exactly the terms the key's two
+states are.
+
+A spin arrives as a burst of rotation events, and everything either action can
+be pointed at is discrete — a hotkey, or a filter going on or off. A turn
+therefore fires at most five times a second, rather than sending a flick's worth
+of *Start recording* at OBS. Turning a detent at a time is well inside that.
 
 ## Why the companion exists
 
@@ -91,7 +114,8 @@ instructions.
 
 ## Requirements
 
-- Stream Deck 7.1 or later.
+- Stream Deck 7.1 or later, and a Stream Deck + for the dial layouts of the
+  OBS Trigger and OBS Filter actions.
 - OBS Studio 28 or later, with the WebSocket server enabled
   (*Tools → WebSocket Server Settings*).
 - OBS Studio 30.0+ and obs-websocket 5.4.0+ to use source hotkeys.
