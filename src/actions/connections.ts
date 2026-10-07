@@ -7,11 +7,10 @@ import type { ConnectionStatus, ObsInstance } from "../obs/types";
  * The Connections tab every property inspector carries.
  *
  * Stream Deck has no plugin-level settings screen, so the shared instance list
- * is edited from inside whichever action happens to be open. Rather than give
- * that job to one dedicated action, every action's property inspector has a
- * second tab for it, served from here; each action forwards its
- * `sendToPlugin` messages through {@link handleConnectionRequest} before
- * looking at its own.
+ * is edited from inside whichever action happens to be open: every action's
+ * property inspector has a second tab for it, served from here. Each action
+ * forwards its `sendToPlugin` messages through {@link handleConnectionRequest}
+ * before looking at its own.
  */
 
 /** A connection as the tab lists it: everything but the password. */
