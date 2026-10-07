@@ -23,6 +23,7 @@ import {
 	type FilterOperation,
 	type FilterSettings,
 } from "../obs/types";
+import { handleConnectionRequest, type ConnectionRequest } from "./connections";
 import { parseDataSourceEvent, readAssignment, RotationThrottle } from "./dial";
 import { backfillSourceUuids, filterItems, instanceItems, sourceItems } from "./property-inspector";
 
@@ -242,7 +243,11 @@ export class ObsFilterAction extends SingletonAction<FilterSettings> {
 	 * A dial's dropdowns come through with the interaction they belong to in
 	 * the event name, since that is the only thing a datasource sends.
 	 */
-	override async onSendToPlugin(ev: SendToPluginEvent<{ event: string }, FilterSettings>): Promise<void> {
+	override async onSendToPlugin(ev: SendToPluginEvent<ConnectionRequest, FilterSettings>): Promise<void> {
+		if (await handleConnectionRequest(ev.payload)) {
+			return;
+		}
+
 		const { event } = ev.payload;
 		const { name, interaction } = parseDataSourceEvent(event);
 		const settings = await ev.action.getSettings();

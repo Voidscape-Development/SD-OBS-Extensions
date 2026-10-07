@@ -1,5 +1,6 @@
 import streamDeck from "@elgato/streamdeck";
 
+import { pushConnectionUpdates } from "./actions/connections";
 import { ObsConnectionAction } from "./actions/obs-connection";
 import { ObsFilterAction } from "./actions/obs-filter";
 import { ObsTriggerAction } from "./actions/obs-trigger";
@@ -12,6 +13,8 @@ streamDeck.logger.setLevel("info");
 streamDeck.actions.registerAction(new ObsConnectionAction());
 streamDeck.actions.registerAction(new ObsTriggerAction());
 streamDeck.actions.registerAction(new ObsFilterAction());
+
+pushConnectionUpdates();
 
 streamDeck
 	.connect()

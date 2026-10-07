@@ -8,203 +8,225 @@
 	</head>
 
 	<body>
-		<sdpi-item label="OBS Instance">
-			<sdpi-select
-				id="instance"
-				setting="instanceId"
-				datasource="instances"
-				placeholder="Select an instance"
-			></sdpi-select>
-		</sdpi-item>
+		<nav class="tabs">
+			<button type="button" data-tab="settings" class="active">Settings</button>
+			<button type="button" data-tab="connections">Connections</button>
+		</nav>
 
-		<!--
+		<div class="tab-panel" data-tab="settings">
+			<sdpi-item label="OBS Instance">
+				<sdpi-select
+					id="instance"
+					setting="instanceId"
+					datasource="instances"
+					placeholder="Select an instance"
+				></sdpi-select>
+			</sdpi-item>
+
+			<!--
 			Both sections start hidden. Which one applies depends on whether this
 			action was dropped on a key or on a dial, which the plugin reports
 			alongside the rest of its capabilities; showing neither until then
 			keeps the wrong one from flashing up first.
 		-->
 
-		<!-- Key -->
-		<div id="keypad" style="display: none">
-			<sdpi-item label="Trigger">
-				<sdpi-select id="kind" setting="kind" default="globalHotkey">
-					<option value="globalHotkey">Global hotkey</option>
-					<option value="sourceHotkey">Source hotkey</option>
-					<option value="filter">Filter</option>
-				</sdpi-select>
-			</sdpi-item>
+			<!-- Key -->
+			<div id="keypad" style="display: none">
+				<sdpi-item label="Trigger">
+					<sdpi-select id="kind" setting="kind" default="globalHotkey">
+						<option value="globalHotkey">Global hotkey</option>
+						<option value="sourceHotkey">Source hotkey</option>
+						<option value="filter">Filter</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="row-source" label="Source">
-				<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="row-source" label="Source">
+					<sdpi-select
+						id="source"
+						setting="sourceName"
+						datasource="sources"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="row-hotkey" label="Hotkey">
-				<sdpi-select id="hotkey" setting="hotkey" datasource="hotkeys" placeholder="Select a hotkey"></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="row-hotkey" label="Hotkey">
+					<sdpi-select id="hotkey" setting="hotkey" datasource="hotkeys" placeholder="Select a hotkey"></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="row-filter" label="Filter">
-				<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="row-filter" label="Filter">
+					<sdpi-select
+						id="filter"
+						setting="filterName"
+						datasource="filters"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="row-filterOp" label="Action">
-				<sdpi-select id="filterOperation" setting="filterOperation" default="enable">
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="row-filterOp" label="Action">
+					<sdpi-select id="filterOperation" setting="filterOperation" default="enable">
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<div id="row-filterHint" class="hint">Use the OBS Filter action to toggle a filter and see whether it is on.</div>
-		</div>
-
-		<!-- Dial -->
-		<div id="encoder" style="display: none">
-			<div class="hint">
-				Turning either way and pressing each trigger whatever they are set to, independently. Leave one on Nothing to
-				have it do nothing at all. Tapping the touchscreen does the same as pressing.
+				<div id="row-filterHint" class="hint">
+					Use the OBS Filter action to toggle a filter and see whether it is on.
+				</div>
 			</div>
 
-			<div class="heading">Turn left</div>
+			<!-- Dial -->
+			<div id="encoder" style="display: none">
+				<div class="hint">
+					Turning either way and pressing each trigger whatever they are set to, independently. Leave one on Nothing to
+					have it do nothing at all. Tapping the touchscreen does the same as pressing.
+				</div>
 
-			<sdpi-item label="Trigger">
-				<sdpi-select id="turnLeft-kind" setting="turnLeftKind" default="none">
-					<option value="none">Nothing</option>
-					<option value="globalHotkey">Global hotkey</option>
-					<option value="sourceHotkey">Source hotkey</option>
-					<option value="filter">Filter</option>
-				</sdpi-select>
-			</sdpi-item>
+				<div class="heading">Turn left</div>
 
-			<sdpi-item id="turnLeft-row-source" label="Source">
-				<sdpi-select
-					id="turnLeft-source"
-					setting="turnLeftSourceName"
-					datasource="sourcesTurnLeft"
-					placeholder="Select a source"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item label="Trigger">
+					<sdpi-select id="turnLeft-kind" setting="turnLeftKind" default="none">
+						<option value="none">Nothing</option>
+						<option value="globalHotkey">Global hotkey</option>
+						<option value="sourceHotkey">Source hotkey</option>
+						<option value="filter">Filter</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnLeft-row-hotkey" label="Hotkey">
-				<sdpi-select
-					id="turnLeft-hotkey"
-					setting="turnLeftHotkey"
-					datasource="hotkeysTurnLeft"
-					placeholder="Select a hotkey"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnLeft-row-source" label="Source">
+					<sdpi-select
+						id="turnLeft-source"
+						setting="turnLeftSourceName"
+						datasource="sourcesTurnLeft"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnLeft-row-filter" label="Filter">
-				<sdpi-select
-					id="turnLeft-filter"
-					setting="turnLeftFilterName"
-					datasource="filtersTurnLeft"
-					placeholder="Select a filter"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnLeft-row-hotkey" label="Hotkey">
+					<sdpi-select
+						id="turnLeft-hotkey"
+						setting="turnLeftHotkey"
+						datasource="hotkeysTurnLeft"
+						placeholder="Select a hotkey"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnLeft-row-filterOp" label="Action">
-				<sdpi-select id="turnLeft-filterOperation" setting="turnLeftFilterOperation" default="enable">
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnLeft-row-filter" label="Filter">
+					<sdpi-select
+						id="turnLeft-filter"
+						setting="turnLeftFilterName"
+						datasource="filtersTurnLeft"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<div class="heading">Turn right</div>
+				<sdpi-item id="turnLeft-row-filterOp" label="Action">
+					<sdpi-select id="turnLeft-filterOperation" setting="turnLeftFilterOperation" default="enable">
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item label="Trigger">
-				<sdpi-select id="turnRight-kind" setting="turnRightKind" default="none">
-					<option value="none">Nothing</option>
-					<option value="globalHotkey">Global hotkey</option>
-					<option value="sourceHotkey">Source hotkey</option>
-					<option value="filter">Filter</option>
-				</sdpi-select>
-			</sdpi-item>
+				<div class="heading">Turn right</div>
 
-			<sdpi-item id="turnRight-row-source" label="Source">
-				<sdpi-select
-					id="turnRight-source"
-					setting="turnRightSourceName"
-					datasource="sourcesTurnRight"
-					placeholder="Select a source"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item label="Trigger">
+					<sdpi-select id="turnRight-kind" setting="turnRightKind" default="none">
+						<option value="none">Nothing</option>
+						<option value="globalHotkey">Global hotkey</option>
+						<option value="sourceHotkey">Source hotkey</option>
+						<option value="filter">Filter</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnRight-row-hotkey" label="Hotkey">
-				<sdpi-select
-					id="turnRight-hotkey"
-					setting="turnRightHotkey"
-					datasource="hotkeysTurnRight"
-					placeholder="Select a hotkey"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnRight-row-source" label="Source">
+					<sdpi-select
+						id="turnRight-source"
+						setting="turnRightSourceName"
+						datasource="sourcesTurnRight"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnRight-row-filter" label="Filter">
-				<sdpi-select
-					id="turnRight-filter"
-					setting="turnRightFilterName"
-					datasource="filtersTurnRight"
-					placeholder="Select a filter"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnRight-row-hotkey" label="Hotkey">
+					<sdpi-select
+						id="turnRight-hotkey"
+						setting="turnRightHotkey"
+						datasource="hotkeysTurnRight"
+						placeholder="Select a hotkey"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnRight-row-filterOp" label="Action">
-				<sdpi-select id="turnRight-filterOperation" setting="turnRightFilterOperation" default="enable">
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnRight-row-filter" label="Filter">
+					<sdpi-select
+						id="turnRight-filter"
+						setting="turnRightFilterName"
+						datasource="filtersTurnRight"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<div class="heading">Press or tap</div>
+				<sdpi-item id="turnRight-row-filterOp" label="Action">
+					<sdpi-select id="turnRight-filterOperation" setting="turnRightFilterOperation" default="enable">
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item label="Trigger">
-				<sdpi-select id="press-kind" setting="pressKind" default="none">
-					<option value="none">Nothing</option>
-					<option value="globalHotkey">Global hotkey</option>
-					<option value="sourceHotkey">Source hotkey</option>
-					<option value="filter">Filter</option>
-				</sdpi-select>
-			</sdpi-item>
+				<div class="heading">Press or tap</div>
 
-			<sdpi-item id="press-row-source" label="Source">
-				<sdpi-select
-					id="press-source"
-					setting="pressSourceName"
-					datasource="sourcesPress"
-					placeholder="Select a source"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item label="Trigger">
+					<sdpi-select id="press-kind" setting="pressKind" default="none">
+						<option value="none">Nothing</option>
+						<option value="globalHotkey">Global hotkey</option>
+						<option value="sourceHotkey">Source hotkey</option>
+						<option value="filter">Filter</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="press-row-hotkey" label="Hotkey">
-				<sdpi-select
-					id="press-hotkey"
-					setting="pressHotkey"
-					datasource="hotkeysPress"
-					placeholder="Select a hotkey"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="press-row-source" label="Source">
+					<sdpi-select
+						id="press-source"
+						setting="pressSourceName"
+						datasource="sourcesPress"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="press-row-filter" label="Filter">
-				<sdpi-select
-					id="press-filter"
-					setting="pressFilterName"
-					datasource="filtersPress"
-					placeholder="Select a filter"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="press-row-hotkey" label="Hotkey">
+					<sdpi-select
+						id="press-hotkey"
+						setting="pressHotkey"
+						datasource="hotkeysPress"
+						placeholder="Select a hotkey"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="press-row-filterOp" label="Action">
-				<sdpi-select id="press-filterOperation" setting="pressFilterOperation" default="enable">
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="press-row-filter" label="Filter">
+					<sdpi-select
+						id="press-filter"
+						setting="pressFilterName"
+						datasource="filtersPress"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<div id="encoder-filterHint" class="hint">
-				Use the OBS Filter action on the dial to toggle filters and see whether they are on.
+				<sdpi-item id="press-row-filterOp" label="Action">
+					<sdpi-select id="press-filterOperation" setting="pressFilterOperation" default="enable">
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
+
+				<div id="encoder-filterHint" class="hint">
+					Use the OBS Filter action on the dial to toggle filters and see whether they are on.
+				</div>
 			</div>
+
+			<div id="hint" class="hint"></div>
 		</div>
 
-		<div id="hint" class="hint"></div>
+		<div id="connections" class="tab-panel" data-tab="connections" hidden></div>
 
+		<script src="connections.js"></script>
 		<script>
 			(() => {
 				const client = SDPIComponents.streamDeckClient;
@@ -265,6 +287,14 @@
 				 */
 				const SETTLE_MS = 300;
 
+				/** Every dropdown whose contents come from the connected OBS. */
+				const OBS_DROPDOWNS = [
+					"source",
+					"hotkey",
+					"filter",
+					...SLOTS.flatMap((slot) => [`${slot}-source`, `${slot}-hotkey`, `${slot}-filter`]),
+				];
+
 				function refresh(...ids) {
 					setTimeout(() => {
 						for (const id of ids) {
@@ -290,7 +320,7 @@
 
 					if (!connected) {
 						hint.textContent =
-							"Not connected. Connect this instance from an OBS Connection action to load sources and hotkeys.";
+							"Not connected. Connect this instance from the Connections tab to load sources and hotkeys.";
 						hint.classList.add("warn");
 						return;
 					}
@@ -310,23 +340,33 @@
 					}
 				}
 
+				/** Whether this action's instance was connected when last asked. */
+				let wasConnected;
+
 				async function updateHint() {
 					try {
-						showHint(await capabilities());
+						const state = await capabilities();
+						showHint(state);
+
+						// Everything below the instance is read from OBS, so dropdowns
+						// that could only say "connect first" reload once it is up.
+						if (wasConnected !== undefined && state.connected !== wasConnected) {
+							refresh(...OBS_DROPDOWNS);
+						}
+						wasConnected = state.connected;
 					} catch {
 						el("hint").textContent = "";
 					}
 				}
 
 				el("instance").addEventListener("valuechange", () => {
-					refresh(
-						"source",
-						"hotkey",
-						"filter",
-						...SLOTS.flatMap((slot) => [`${slot}-source`, `${slot}-hotkey`, `${slot}-filter`]),
-					);
+					refresh(...OBS_DROPDOWNS);
 					updateHint();
 				});
+
+				// A connection coming up or going down, from the Connections tab or
+				// anywhere else, changes what the hint says and what can be listed.
+				document.addEventListener("obsx:connections", updateHint);
 
 				el("kind").addEventListener("valuechange", (ev) => {
 					applyLayout(null, ev.target.value);
@@ -369,6 +409,7 @@
 
 					if (state) {
 						showHint(state);
+						wasConnected = state.connected;
 					}
 				})();
 			})();

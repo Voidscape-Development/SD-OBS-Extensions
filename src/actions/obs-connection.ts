@@ -10,7 +10,8 @@ import streamDeck, {
 } from "@elgato/streamdeck";
 
 import { connectionManager } from "../obs/connection-manager";
-import type { ConnectionSettings, DataSourceItem, ObsInstance } from "../obs/types";
+import type { ConnectionSettings, DataSourceItem } from "../obs/types";
+import { handleConnectionRequest, type ConnectionRequest } from "./connections";
 
 /** Sentinel used by the "all instances" dropdown entry. */
 const ALL_INSTANCES = "";
@@ -31,26 +32,12 @@ const ALL_INSTANCES = "";
 const IMAGE_CONNECTED = "imgs/actions/connection/key-active@2x.png";
 const IMAGE_IDLE = "imgs/actions/connection/key@2x.png";
 
-const DEFAULT_INSTANCE: Omit<ObsInstance, "id"> = {
-	name: "OBS",
-	host: "127.0.0.1",
-	port: 4455,
-	password: "",
-	autoConnect: true,
-};
-
-type InstancePayload = {
-	event: string;
-	instance?: ObsInstance;
-	instanceId?: string;
-};
-
 /**
- * Manages the plugin's OBS instances, and doubles as a connect/disconnect key.
+ * A connect/disconnect key that shows an OBS instance's live status.
  *
- * Stream Deck has no plugin-level settings screen, so this action's property
- * inspector is where the shared instance list is edited; every other action
- * simply picks from it.
+ * Adding, editing and removing instances is not this action's job: every
+ * action's property inspector has a Connections tab for that, so this key is
+ * only needed for status at a glance and a physical connect button.
  *
  * The key shows connection status through its image and title, both re-derived
  * from the connection manager on every change — see {@link IMAGE_CONNECTED}.
@@ -103,107 +90,29 @@ export class ObsConnectionAction extends SingletonAction<ConnectionSettings> {
 	}
 
 	/**
-	 * Serves the property inspector: the instance dropdown, plus the CRUD
-	 * operations behind the instance editor.
+	 * Serves the property inspector: the Connections tab, and the key's own
+	 * instance dropdown.
 	 */
-	override async onSendToPlugin(ev: SendToPluginEvent<InstancePayload, ConnectionSettings>): Promise<void> {
-		const { event } = ev.payload;
+	override async onSendToPlugin(ev: SendToPluginEvent<ConnectionRequest, ConnectionSettings>): Promise<void> {
+		if (await handleConnectionRequest(ev.payload)) {
+			return;
+		}
 
-		switch (event) {
-			case "instances":
-				await streamDeck.ui.sendToPropertyInspector({
-					event,
-					items: this.#instanceItems(true),
-				});
-				break;
-
-			case "instanceList":
-				await streamDeck.ui.sendToPropertyInspector({
-					event,
-					items: this.#instanceItems(false),
-				});
-				break;
-
-			case "getInstance": {
-				const instance = ev.payload.instanceId ? connectionManager.getInstance(ev.payload.instanceId) : undefined;
-				const state = ev.payload.instanceId ? connectionManager.getState(ev.payload.instanceId) : undefined;
-
-				await streamDeck.ui.sendToPropertyInspector({
-					event,
-					instance: instance ?? { id: "", ...DEFAULT_INSTANCE },
-					status: state?.status ?? "disconnected",
-					error: state?.error ?? "",
-					companion: state?.companion ?? false,
-					obsVersion: state?.obsVersion ?? "",
-					obsWebSocketVersion: state?.obsWebSocketVersion ?? "",
-				});
-				break;
-			}
-
-			case "saveInstance": {
-				const incoming = ev.payload.instance;
-				if (!incoming) {
-					break;
-				}
-
-				const instances = connectionManager.getInstances();
-				const id = incoming.id || globalThis.crypto.randomUUID();
-				const record: ObsInstance = { ...incoming, id, port: Number(incoming.port) || 4455 };
-
-				const index = instances.findIndex((instance) => instance.id === id);
-				if (index >= 0) {
-					instances[index] = record;
-				} else {
-					instances.push(record);
-				}
-
-				await connectionManager.saveInstances(instances);
-				await streamDeck.ui.sendToPropertyInspector({ event, instanceId: id });
-				break;
-			}
-
-			case "deleteInstance": {
-				const remaining = connectionManager.getInstances().filter((instance) => instance.id !== ev.payload.instanceId);
-
-				await connectionManager.saveInstances(remaining);
-				await streamDeck.ui.sendToPropertyInspector({ event, ok: true });
-				break;
-			}
-
-			case "toggleInstance": {
-				let error = "";
-				try {
-					if (ev.payload.instanceId) {
-						await connectionManager.toggle(ev.payload.instanceId);
-					}
-				} catch (err) {
-					error = err instanceof Error ? err.message : String(err);
-				}
-
-				const state = ev.payload.instanceId ? connectionManager.getState(ev.payload.instanceId) : undefined;
-				await streamDeck.ui.sendToPropertyInspector({
-					event,
-					status: state?.status ?? "disconnected",
-					error: error || state?.error || "",
-				});
-				break;
-			}
+		if (ev.payload.event === "instances") {
+			await streamDeck.ui.sendToPropertyInspector({ event: "instances", items: this.#instanceItems() });
 		}
 	}
 
-	#instanceItems(includeAll: boolean): DataSourceItem[] {
+	#instanceItems(): DataSourceItem[] {
 		const items: DataSourceItem[] = connectionManager.getInstances().map((instance) => ({
 			label: instance.name,
 			value: instance.id,
 		}));
 
-		if (includeAll) {
-			items.unshift({ label: "All instances", value: ALL_INSTANCES });
-		}
+		items.unshift({ label: "All instances", value: ALL_INSTANCES });
 
 		return items;
 	}
-
 	async #renderAll(): Promise<void> {
 		for (const current of this.actions) {
 			const settings = await current.getSettings();
