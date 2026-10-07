@@ -16,18 +16,21 @@ see [Why the companion exists](#why-the-companion-exists).
 
 ## Actions
 
-### OBS Connection
+### Connections tab
 
-Manages the plugin's OBS instances. Stream Deck has no plugin-level settings
-screen, so this action's property inspector is where connections are added,
-edited and removed; every other action just picks one from a dropdown. Placed
-on a key it also works as a connect/disconnect toggle with live status.
+Every action's property inspector has two tabs: **Settings**, for the action
+itself, and **Connections**, which manages the plugin's OBS instances. Stream
+Deck has no plugin-level settings screen, so connections are handled from
+whichever action is open; there is no separate action to place for them.
 
-The key has a single state, and its title and image are re-derived from the
-live connection status every time that status changes. A second state would be
-Stream Deck's to flip as well as the plugin's — it advances on every press,
-whether or not the connection came up — which is how a key could end up
-claiming to be connected when it was not.
+The tab lists every connection with its live status — connected, connecting,
+offline, or the error that stopped it — along with the OBS and obs-websocket
+versions and whether the companion plugin was found. From there a connection
+can be added, edited, connected or disconnected, or removed (which asks for a
+second press, since every action pointing at it stops working). Status is
+pushed while the inspector is open, so the list and the action's own dropdowns
+follow along without a refresh. With no connections yet, the inspector opens
+on this tab.
 
 Connections are held open with automatic reconnection and exponential backoff,
 so pressing a trigger key fires immediately rather than paying for a handshake.

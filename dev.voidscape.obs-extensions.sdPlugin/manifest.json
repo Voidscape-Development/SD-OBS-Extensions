@@ -59,22 +59,6 @@
 					"TitleAlignment": "middle"
 				}
 			]
-		},
-		{
-			"Name": "OBS Connection",
-			"UUID": "dev.voidscape.obs-extensions.connection",
-			"Icon": "imgs/actions/connection/icon",
-			"Tooltip": "Manages the plugin's OBS instances, and connects or disconnects them.",
-			"PropertyInspectorPath": "ui/obs-connection.html",
-			"Controllers": [
-				"Keypad"
-			],
-			"States": [
-				{
-					"Image": "imgs/actions/connection/key",
-					"TitleAlignment": "middle"
-				}
-			]
 		}
 	],
 	"Category": "OBS Extensions",

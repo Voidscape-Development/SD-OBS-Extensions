@@ -22,6 +22,9 @@
 	--obsx-text: #d8d8d8;
 	--obsx-text-muted: #9b9b9b;
 	--obsx-warn: #f5a623;
+	--obsx-ok: #3fb950;
+	--obsx-danger: #d9534f;
+	--obsx-accent: #2f80ed;
 	--obsx-surface: #3d3d3d;
 	--obsx-surface-hover: #4a4a4a;
 	--obsx-border: #4f4f4f;
@@ -101,4 +104,120 @@ textarea {
 
 .status.error {
 	color: var(--obsx-warn);
+}
+
+/* --- Tabs --------------------------------------------------------------- */
+
+.tabs {
+	display: flex;
+	gap: 2px;
+	margin: 0 0 10px 0;
+	border-bottom: 1px solid var(--obsx-border);
+}
+
+.tabs button {
+	flex: 1;
+	padding: 6px 8px;
+	color: var(--obsx-text-muted);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+	cursor: pointer;
+}
+
+.tabs button:hover {
+	color: var(--obsx-text);
+}
+
+.tabs button.active {
+	color: var(--obsx-text);
+	border-bottom-color: var(--obsx-accent);
+	font-weight: 600;
+}
+
+.tab-panel[hidden] {
+	display: none;
+}
+
+/* --- Connections -------------------------------------------------------- */
+
+/* The list spans the panel, so its buttons do too. */
+.buttons.buttons-full {
+	padding-left: 0;
+}
+
+.buttons button.danger {
+	color: #fff;
+	background: var(--obsx-danger);
+	border-color: var(--obsx-danger);
+}
+
+.conn-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.conn-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 6px 8px;
+	text-align: left;
+	color: var(--obsx-text);
+	background: var(--obsx-surface);
+	border: 1px solid var(--obsx-border);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.conn-row:hover {
+	background: var(--obsx-surface-hover);
+}
+
+.conn-row.selected {
+	border-color: var(--obsx-accent);
+}
+
+.conn-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.conn-name {
+	font-weight: 600;
+}
+
+.conn-detail {
+	color: var(--obsx-text-muted);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.conn-detail.error {
+	color: var(--obsx-warn);
+}
+
+.conn-dot {
+	flex: none;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--obsx-text-muted);
+}
+
+.conn-dot.connected {
+	background: var(--obsx-ok);
+}
+
+.conn-dot.connecting {
+	background: var(--obsx-warn);
+}
+
+.conn-dot.error {
+	background: var(--obsx-danger);
 }

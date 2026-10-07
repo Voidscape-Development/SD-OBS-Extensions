@@ -8,145 +8,165 @@
 	</head>
 
 	<body>
-		<sdpi-item label="OBS Instance">
-			<sdpi-select
-				id="instance"
-				setting="instanceId"
-				datasource="instances"
-				placeholder="Select an instance"
-			></sdpi-select>
-		</sdpi-item>
+		<nav class="tabs">
+			<button type="button" data-tab="settings" class="active">Settings</button>
+			<button type="button" data-tab="connections">Connections</button>
+		</nav>
 
-		<!--
+		<div class="tab-panel" data-tab="settings">
+			<sdpi-item label="OBS Instance">
+				<sdpi-select
+					id="instance"
+					setting="instanceId"
+					datasource="instances"
+					placeholder="Select an instance"
+				></sdpi-select>
+			</sdpi-item>
+
+			<!--
 			Both sections start hidden. Which one applies depends on whether this
 			action was dropped on a key or on a dial, which the plugin reports
 			alongside the rest of its capabilities; showing neither until then
 			keeps the wrong one from flashing up first.
 		-->
 
-		<!-- Key -->
-		<div id="keypad" style="display: none">
-			<sdpi-item label="Source">
-				<sdpi-select id="source" setting="sourceName" datasource="sources" placeholder="Select a source"></sdpi-select>
-			</sdpi-item>
+			<!-- Key -->
+			<div id="keypad" style="display: none">
+				<sdpi-item label="Source">
+					<sdpi-select
+						id="source"
+						setting="sourceName"
+						datasource="sources"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item label="Filter">
-				<sdpi-select id="filter" setting="filterName" datasource="filters" placeholder="Select a filter"></sdpi-select>
-			</sdpi-item>
-		</div>
-
-		<!-- Dial -->
-		<div id="encoder" style="display: none">
-			<div class="hint">
-				Turning either way and pressing each drive their own filter, independently. Tapping the touchscreen does the
-				same as pressing.
+				<sdpi-item label="Filter">
+					<sdpi-select
+						id="filter"
+						setting="filterName"
+						datasource="filters"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 			</div>
 
-			<div class="heading">Turn left</div>
+			<!-- Dial -->
+			<div id="encoder" style="display: none">
+				<div class="hint">
+					Turning either way and pressing each drive their own filter, independently. Tapping the touchscreen does the
+					same as pressing.
+				</div>
 
-			<sdpi-item id="turnLeft-row-source" label="Source">
-				<sdpi-select
-					id="turnLeft-source"
-					setting="turnLeftSourceName"
-					datasource="sourcesTurnLeft"
-					placeholder="Select a source"
-				></sdpi-select>
-			</sdpi-item>
+				<div class="heading">Turn left</div>
 
-			<sdpi-item id="turnLeft-row-filter" label="Filter">
-				<sdpi-select
-					id="turnLeft-filter"
-					setting="turnLeftFilterName"
-					datasource="filtersTurnLeft"
-					placeholder="Select a filter"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnLeft-row-source" label="Source">
+					<sdpi-select
+						id="turnLeft-source"
+						setting="turnLeftSourceName"
+						datasource="sourcesTurnLeft"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnLeft-row-op" label="Action">
-				<sdpi-select id="turnLeft-op" setting="turnLeftFilterOperation" default="disable">
-					<option value="none">Nothing</option>
-					<option value="toggle">Toggle</option>
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnLeft-row-filter" label="Filter">
+					<sdpi-select
+						id="turnLeft-filter"
+						setting="turnLeftFilterName"
+						datasource="filtersTurnLeft"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<div class="heading">Turn right</div>
+				<sdpi-item id="turnLeft-row-op" label="Action">
+					<sdpi-select id="turnLeft-op" setting="turnLeftFilterOperation" default="disable">
+						<option value="none">Nothing</option>
+						<option value="toggle">Toggle</option>
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnRight-row-source" label="Source">
-				<sdpi-select
-					id="turnRight-source"
-					setting="turnRightSourceName"
-					datasource="sourcesTurnRight"
-					placeholder="Select a source"
-				></sdpi-select>
-			</sdpi-item>
+				<div class="heading">Turn right</div>
 
-			<sdpi-item id="turnRight-row-filter" label="Filter">
-				<sdpi-select
-					id="turnRight-filter"
-					setting="turnRightFilterName"
-					datasource="filtersTurnRight"
-					placeholder="Select a filter"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnRight-row-source" label="Source">
+					<sdpi-select
+						id="turnRight-source"
+						setting="turnRightSourceName"
+						datasource="sourcesTurnRight"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="turnRight-row-op" label="Action">
-				<sdpi-select id="turnRight-op" setting="turnRightFilterOperation" default="enable">
-					<option value="none">Nothing</option>
-					<option value="toggle">Toggle</option>
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="turnRight-row-filter" label="Filter">
+					<sdpi-select
+						id="turnRight-filter"
+						setting="turnRightFilterName"
+						datasource="filtersTurnRight"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<div class="heading">Press or tap</div>
+				<sdpi-item id="turnRight-row-op" label="Action">
+					<sdpi-select id="turnRight-op" setting="turnRightFilterOperation" default="enable">
+						<option value="none">Nothing</option>
+						<option value="toggle">Toggle</option>
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="press-row-source" label="Source">
-				<sdpi-select
-					id="press-source"
-					setting="pressSourceName"
-					datasource="sourcesPress"
-					placeholder="Select a source"
-				></sdpi-select>
-			</sdpi-item>
+				<div class="heading">Press or tap</div>
 
-			<sdpi-item id="press-row-filter" label="Filter">
-				<sdpi-select
-					id="press-filter"
-					setting="pressFilterName"
-					datasource="filtersPress"
-					placeholder="Select a filter"
-				></sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="press-row-source" label="Source">
+					<sdpi-select
+						id="press-source"
+						setting="pressSourceName"
+						datasource="sourcesPress"
+						placeholder="Select a source"
+					></sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item id="press-row-op" label="Action">
-				<sdpi-select id="press-op" setting="pressFilterOperation" default="toggle">
-					<option value="none">Nothing</option>
-					<option value="toggle">Toggle</option>
-					<option value="enable">Enable</option>
-					<option value="disable">Disable</option>
-				</sdpi-select>
-			</sdpi-item>
+				<sdpi-item id="press-row-filter" label="Filter">
+					<sdpi-select
+						id="press-filter"
+						setting="pressFilterName"
+						datasource="filtersPress"
+						placeholder="Select a filter"
+					></sdpi-select>
+				</sdpi-item>
 
-			<div class="heading">Touchscreen</div>
+				<sdpi-item id="press-row-op" label="Action">
+					<sdpi-select id="press-op" setting="pressFilterOperation" default="toggle">
+						<option value="none">Nothing</option>
+						<option value="toggle">Toggle</option>
+						<option value="enable">Enable</option>
+						<option value="disable">Disable</option>
+					</sdpi-select>
+				</sdpi-item>
 
-			<sdpi-item label="Show state for">
-				<sdpi-select id="feedback" setting="feedbackInteraction" default="press">
-					<option value="turnLeft">Turn left</option>
-					<option value="turnRight">Turn right</option>
-					<option value="press">Press or tap</option>
-				</sdpi-select>
-			</sdpi-item>
+				<div class="heading">Touchscreen</div>
 
-			<div class="hint">
-				Each interaction can point at a different filter, so the touchscreen follows one of them. An interaction with no
-				filter chosen falls through to one that has.
+				<sdpi-item label="Show state for">
+					<sdpi-select id="feedback" setting="feedbackInteraction" default="press">
+						<option value="turnLeft">Turn left</option>
+						<option value="turnRight">Turn right</option>
+						<option value="press">Press or tap</option>
+					</sdpi-select>
+				</sdpi-item>
+
+				<div class="hint">
+					Each interaction can point at a different filter, so the touchscreen follows one of them. An interaction with
+					no filter chosen falls through to one that has.
+				</div>
 			</div>
+
+			<div id="hint" class="hint"></div>
 		</div>
 
-		<div id="hint" class="hint"></div>
+		<div id="connections" class="tab-panel" data-tab="connections" hidden></div>
 
+		<script src="connections.js"></script>
 		<script>
 			(() => {
 				const client = SDPIComponents.streamDeckClient;
@@ -166,6 +186,9 @@
 				 * from being refreshed against the previous selection.
 				 */
 				const SETTLE_MS = 300;
+
+				/** Every dropdown whose contents come from the connected OBS. */
+				const OBS_DROPDOWNS = ["source", "filter", ...SLOTS.flatMap((slot) => [`${slot}-source`, `${slot}-filter`])];
 
 				function refresh(...ids) {
 					setTimeout(() => {
@@ -192,21 +215,36 @@
 					hint.classList.toggle("warn", !connected);
 					hint.textContent = connected
 						? "The action shows whether the filter is on, and follows changes made in OBS."
-						: "Not connected. Connect this instance from an OBS Connection action to load sources and filters.";
+						: "Not connected. Connect this instance from the Connections tab to load sources and filters.";
 				}
+
+				/** Whether this action's instance was connected when last asked. */
+				let wasConnected;
 
 				async function updateHint() {
 					try {
-						showHint(await capabilities());
+						const state = await capabilities();
+						showHint(state);
+
+						// Everything below the instance is read from OBS, so dropdowns
+						// that could only say "connect first" reload once it is up.
+						if (wasConnected !== undefined && state.connected !== wasConnected) {
+							refresh(...OBS_DROPDOWNS);
+						}
+						wasConnected = state.connected;
 					} catch {
 						el("hint").textContent = "";
 					}
 				}
 
 				el("instance").addEventListener("valuechange", () => {
-					refresh("source", "filter", ...SLOTS.flatMap((slot) => [`${slot}-source`, `${slot}-filter`]));
+					refresh(...OBS_DROPDOWNS);
 					updateHint();
 				});
+
+				// A connection coming up or going down, from the Connections tab or
+				// anywhere else, changes what the hint says and what can be listed.
+				document.addEventListener("obsx:connections", updateHint);
 
 				el("source").addEventListener("valuechange", () => refresh("filter"));
 
@@ -224,6 +262,7 @@
 
 					if (state) {
 						showHint(state);
+						wasConnected = state.connected;
 					}
 				})();
 			})();

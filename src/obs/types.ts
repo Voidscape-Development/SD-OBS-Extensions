@@ -177,14 +177,6 @@ export type FilterSettings = {
 } & PerInteraction<FilterAssignment> &
 	SourceScopedSettings;
 
-/** Settings for the connection action. */
-export type ConnectionSettings = {
-	/** Instance this key connects/disconnects, or empty for "all". */
-	instanceId?: string;
-	/** Whether pressing the key toggles the connection. */
-	pressToToggle?: boolean;
-} & JsonObject;
-
 /** An entry in a property inspector dropdown, per the sdpi-components contract. */
 export type DataSourceItem = {
 	label?: string;
