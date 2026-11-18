@@ -50,20 +50,15 @@ export async function findSource(instanceId: string, sourceName: string): Promis
 }
 
 /**
- * Targets a source by UUID where the server supports it, falling back to its
- * name. UUIDs survive renames; names do not.
+ * Targets a source by UUID where one is known, falling back to its name.
+ * UUIDs survive renames; names do not.
  */
-function sourceRef(
-	instanceId: string,
-	source: { name: string; uuid?: string },
-): { sourceUuid: string } | { sourceName: string } {
-	return source.uuid && connectionManager.supportsUuids(instanceId)
-		? { sourceUuid: source.uuid }
-		: { sourceName: source.name };
+function sourceRef(source: { name: string; uuid?: string }): { sourceUuid: string } | { sourceName: string } {
+	return source.uuid ? { sourceUuid: source.uuid } : { sourceName: source.name };
 }
 
 export async function listFilters(instanceId: string, source: { name: string; uuid?: string }): Promise<FilterRef[]> {
-	const { filters } = await connectionManager.call(instanceId, "GetSourceFilterList", sourceRef(instanceId, source));
+	const { filters } = await connectionManager.call(instanceId, "GetSourceFilterList", sourceRef(source));
 
 	return filters
 		.map((filter) => ({
@@ -80,7 +75,7 @@ export async function isFilterEnabled(
 	filterName: string,
 ): Promise<boolean> {
 	const filter = await connectionManager.call(instanceId, "GetSourceFilter", {
-		...sourceRef(instanceId, source),
+		...sourceRef(source),
 		filterName,
 	});
 
@@ -103,7 +98,7 @@ export async function applyFilterOperation(
 		operation === "toggle" ? !(await isFilterEnabled(instanceId, source, filterName)) : operation === "enable";
 
 	await connectionManager.call(instanceId, "SetSourceFilterEnabled", {
-		...sourceRef(instanceId, source),
+		...sourceRef(source),
 		filterName,
 		filterEnabled: enabled,
 	});

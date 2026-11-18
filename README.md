@@ -105,7 +105,7 @@ connection:
 | Source hotkeys | Inferred from input kind, plus a runtime audio probe | Reported exactly by the source that registered them |
 | Duplicate names | `OBSBasic.SelectScene` and friends are ambiguous — first match wins | Every hotkey individually addressable |
 | Source renames | Break the button (targeting is by name) | Survive (targeting is by UUID) |
-| Requires | obs-websocket 5.4.0+ for source hotkeys | OBS 30.0+ |
+| Requires | OBS Studio 33+ | OBS Studio 33+ |
 
 Nothing is unreachable in either mode: anything the curated catalog does not
 cover is still listed under "All hotkeys".
@@ -121,7 +121,7 @@ instructions.
   OBS Trigger and OBS Filter actions.
 - OBS Studio 28 or later, with the WebSocket server enabled
   (*Tools → WebSocket Server Settings*).
-- OBS Studio 30.0+ and obs-websocket 5.4.0+ to use source hotkeys.
+- OBS Studio 33 or newer.
 
 ## Building the Stream Deck plugin
 
@@ -156,7 +156,7 @@ Every run of the Stream Deck job uploads two artifacts:
   misbehaves.
 
 The OBS companion job uploads per-platform packages (Windows installer and
-portable zip, macOS pkg, Ubuntu deb) plus debug symbols, using the standard
+zip, macOS pkg, Ubuntu deb) plus debug symbols, using the standard
 [obs-plugintemplate](https://github.com/obsproject/obs-plugintemplate) build
 scripts.
 
