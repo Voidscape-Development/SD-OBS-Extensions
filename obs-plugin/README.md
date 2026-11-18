@@ -99,7 +99,8 @@ per-user plugin directories are usually easier — copy the built module and the
 
 | Platform | Path |
 | --- | --- |
-| Windows | `%APPDATA%\obs-studio\plugins\obs-extensions\bin\64bit\` (data in `...\obs-extensions\data\`) |
+| Windows (OBS 33+) | `C:\ProgramData\obs-studio\plugins\obs-extensions\` (data in `...\obs-extensions\data\`) |
+| Windows (OBS 32 and earlier) | `%APPDATA%\obs-studio\plugins\obs-extensions\bin\64bit\` (data in `...\obs-extensions\data\`) |
 | macOS | `~/Library/Application Support/obs-studio/plugins/obs-extensions.plugin` |
 | Linux | `~/.config/obs-studio/plugins/obs-extensions/bin/64bit/` (data in `.../obs-extensions/data/`) |
 

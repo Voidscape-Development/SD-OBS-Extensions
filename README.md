@@ -155,8 +155,9 @@ Every run of the Stream Deck job uploads two artifacts:
   dropping straight into the Stream Deck plugins folder when a packaged install
   misbehaves.
 
-The OBS companion job uploads per-platform packages (Windows installer and
-portable zip, macOS pkg, Ubuntu deb) plus debug symbols, using the standard
+The OBS companion job uploads per-platform packages (Windows installer and zip
+for OBS 33+, legacy and portable-legacy zips for older OBS, macOS pkg, Ubuntu
+deb) plus debug symbols, using the standard
 [obs-plugintemplate](https://github.com/obsproject/obs-plugintemplate) build
 scripts.
 

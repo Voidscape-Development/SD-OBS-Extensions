@@ -1,0 +1,18 @@
+{
+    "display_name": "OBS Extensions",
+    "id": "fb31170d-92e4-4225-a899-fcfc4f6520ed",
+    "version": "0.1.0",
+    "authors": [
+        "Voidscape Media"
+    ],
+    "name": "obs-extensions",
+    "description": "Companion plugin that makes the OBS Extensions Stream Deck plugin's hotkey support exact.",
+    "long_description": "An optional native OBS Studio plugin that makes the Stream Deck plugin's hotkey support exact instead of approximate. It adds nothing to the OBS interface.",
+    "urls": {
+        "repository": "https://github.com/Voidscape-Development/SD-OBS-Extensions",
+        "website": "https://github.com/Voidscape-Development/SD-OBS-Extensions",
+        "support": "https://github.com/Voidscape-Development/SD-OBS-Extensions/issues"
+    },
+    "has_banner": false,
+    "has_icon": false
+}
