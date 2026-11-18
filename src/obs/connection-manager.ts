@@ -9,16 +9,6 @@ import { SUPPORTED_PROTOCOL_VERSION, VENDOR_NAME, VendorRequest, type GetVersion
 const RECONNECT_BASE_DELAY = 2_000;
 const RECONNECT_MAX_DELAY = 30_000;
 
-/**
- * obs-websocket 5.4.0 added both `contextName` on `TriggerHotkeyByName` and
- * UUID targeting for sources and filters.
- *
- * Older servers silently ignore `contextName`, which would fire some other
- * source's hotkey, so the heuristic provider declines to offer source hotkeys
- * below this version. UUID targeting simply falls back to targeting by name.
- */
-const MIN_VERSION_FOR_UUID_AND_CONTEXT = [5, 4, 0] as const;
-
 type Events = {
 	/** A connection changed status, or its capabilities were re-detected. */
 	stateChanged: (state: ConnectionState) => void;
@@ -27,26 +17,6 @@ type Events = {
 	/** A filter's enabled state changed in OBS. */
 	filterStateChanged: (event: { instanceId: string; sourceName: string; filterName: string; enabled: boolean }) => void;
 };
-
-/** Compares dotted version strings, tolerating suffixes such as `5.5.0-beta1`. */
-function isVersionAtLeast(version: string | undefined, minimum: readonly number[]): boolean {
-	if (!version) {
-		return false;
-	}
-
-	const parts = version.split(".").map((part) => Number.parseInt(part, 10));
-	for (let i = 0; i < minimum.length; i++) {
-		const part = parts[i] ?? 0;
-		if (Number.isNaN(part)) {
-			return false;
-		}
-		if (part !== minimum[i]) {
-			return part > minimum[i];
-		}
-	}
-
-	return true;
-}
 
 /** A single OBS endpoint and everything we track about it. */
 class ManagedConnection {
@@ -67,14 +37,6 @@ class ManagedConnection {
 
 	public get url(): string {
 		return `ws://${this.instance.host}:${this.instance.port}`;
-	}
-
-	/**
-	 * True when the server is new enough for `TriggerHotkeyByName` to honour
-	 * `contextName` and for requests to accept UUIDs.
-	 */
-	public get supportsUuidAndContext(): boolean {
-		return isVersionAtLeast(this.obsWebSocketVersion, MIN_VERSION_FOR_UUID_AND_CONTEXT);
 	}
 
 	public scheduleReconnect(run: () => void): void {
@@ -156,16 +118,6 @@ export class ConnectionManager {
 	/** Whether the companion OBS plugin was detected on this instance. */
 	public hasCompanion(instanceId: string): boolean {
 		return this.#connections.get(instanceId)?.companion === true;
-	}
-
-	/** Whether `TriggerHotkeyByName` on this instance honours `contextName`. */
-	public supportsHotkeyContext(instanceId: string): boolean {
-		return this.#connections.get(instanceId)?.supportsUuidAndContext === true;
-	}
-
-	/** Whether requests on this instance accept `sourceUuid` and friends. */
-	public supportsUuids(instanceId: string): boolean {
-		return this.#connections.get(instanceId)?.supportsUuidAndContext === true;
 	}
 
 	/** Persists the instance list and reconciles the live connections. */

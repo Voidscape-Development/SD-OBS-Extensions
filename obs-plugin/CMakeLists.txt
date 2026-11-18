@@ -9,7 +9,7 @@ project(${_name} VERSION ${_version})
 # handling in cmake/, but nothing links against it.
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" OFF)
 option(ENABLE_QT "Use Qt functionality" OFF)
-option(ENABLE_BUILD_LEGACY "Enable legacy build" ON)
+option(ENABLE_BUILD_LEGACY "Enable legacy build" OFF)
 
 include(compilerconfig)
 include(defaults)

@@ -314,7 +314,7 @@
 					return response.payload;
 				}
 
-				function showHint({ connected, companion, supportsHotkeyContext }) {
+				function showHint({ connected, companion }) {
 					const hint = el("hint");
 					hint.classList.remove("warn");
 
@@ -331,13 +331,7 @@
 						return;
 					}
 
-					hint.textContent = supportsHotkeyContext
-						? "Install the companion OBS plugin for full hotkey names and rename-proof targeting."
-						: "obs-websocket 5.4.0 or later is required for source hotkeys. Update OBS, or install the companion OBS plugin.";
-
-					if (!supportsHotkeyContext) {
-						hint.classList.add("warn");
-					}
+					hint.textContent = "Install the companion OBS plugin for full hotkey names and rename-proof targeting.";
 				}
 
 				/** Whether this action's instance was connected when last asked. */

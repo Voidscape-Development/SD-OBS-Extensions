@@ -175,12 +175,6 @@ class HeuristicHotkeyProvider implements HotkeyProvider {
 	}
 
 	public async listSourceHotkeys(source: SourceRef): Promise<HotkeyChoice[]> {
-		if (!connectionManager.supportsHotkeyContext(this.instanceId)) {
-			// Without contextName, TriggerHotkeyByName would fire whichever
-			// source registered the name first - worse than offering nothing.
-			return [];
-		}
-
 		const available = await this.#availableNames();
 		const candidates: CuratedHotkey[] = [];
 

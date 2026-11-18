@@ -326,14 +326,12 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 	#capabilities(settings: TriggerSettings): {
 		connected: boolean;
 		companion: boolean;
-		supportsHotkeyContext: boolean;
 	} {
 		const { instanceId } = settings;
 
 		return {
 			connected: Boolean(instanceId) && connectionManager.isConnected(instanceId!),
 			companion: Boolean(instanceId) && connectionManager.hasCompanion(instanceId!),
-			supportsHotkeyContext: Boolean(instanceId) && connectionManager.supportsHotkeyContext(instanceId!),
 		};
 	}
 
@@ -362,10 +360,6 @@ export class ObsTriggerAction extends SingletonAction<TriggerSettings> {
 				}
 
 				choices = await provider.listSourceHotkeys(source);
-
-				if (choices.length === 0 && !connectionManager.supportsHotkeyContext(instanceId)) {
-					return notice("Requires obs-websocket 5.4.0 or later");
-				}
 			} else {
 				choices = await provider.listGlobalHotkeys();
 			}

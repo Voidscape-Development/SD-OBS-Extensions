@@ -59,7 +59,7 @@ and re-created under the same name keeps working.
 
 ## Requirements
 
-- OBS Studio 30.0 or later (source UUIDs were added in 30.0).
+- OBS Studio 33 or later.
 - obs-websocket 5.x, bundled with OBS since 28.0.
 - The OBS development headers, via a full OBS source build or the OBS SDK.
 
@@ -99,10 +99,9 @@ per-user plugin directories are usually easier — copy the built module and the
 
 | Platform | Path |
 | --- | --- |
-| Windows (OBS 33+) | `C:\ProgramData\obs-studio\plugins\obs-extensions\` (data in `...\obs-extensions\data\`) |
-| Windows (OBS 32 and earlier) | `%APPDATA%\obs-studio\plugins\obs-extensions\bin\64bit\` (data in `...\obs-extensions\data\`) |
+| Windows | `C:\ProgramData\obs-studio\plugins\obs-extensions\` (data in `...\obs-extensions\data\`) |
 | macOS | `~/Library/Application Support/obs-studio/plugins/obs-extensions.plugin` |
-| Linux | `~/.config/obs-studio/plugins/obs-extensions/bin/64bit/` (data in `.../obs-extensions/data/`) |
+| Linux | Use `cmake --install build --prefix /usr`, which installs under `<libdir>/obs-modules/plugins` |
 
 Restart OBS afterwards. The OBS log should contain:
 
